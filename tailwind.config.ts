@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,6 +53,19 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				azure: {
+					DEFAULT: '#0078D4',
+					50: '#E6F2FC',
+					100: '#CCE5F9',
+					200: '#99CBF4',
+					300: '#66B0EE',
+					400: '#3396E9',
+					500: '#0078D4',
+					600: '#0060A9',
+					700: '#00487F',
+					800: '#003054',
+					900: '#00182A',
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -84,11 +98,16 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-azure': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.7' },
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-azure': 'pulse-azure 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
 			}
 		}
 	},
