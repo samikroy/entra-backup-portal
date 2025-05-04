@@ -13,22 +13,42 @@ const msalConfig = {
   }
 };
 
-// Create a mock for development purpose
-const mockAuthResult: AuthenticationResult = {
-  authority: msalConfig.auth.authority,
-  uniqueId: 'mock-user-id',
-  tenantId: 'mock-tenant-id',
-  scopes: ['User.Read'],
-  account: {
-    homeAccountId: 'mock-home-account-id',
+// Create mock user profiles for development purpose
+const mockProfiles = {
+  admin: {
+    homeAccountId: 'mock-admin-account-id',
+    environment: 'login.microsoftonline.com',
+    tenantId: 'mock-tenant-id',
+    username: 'admin@contoso.onmicrosoft.com',
+    localAccountId: 'mock-admin-local-account-id',
+    name: 'Admin User',
+    roles: ['Admin', 'User'],
+  },
+  user: {
+    homeAccountId: 'mock-user-account-id',
     environment: 'login.microsoftonline.com',
     tenantId: 'mock-tenant-id',
     username: 'demo@contoso.onmicrosoft.com',
-    localAccountId: 'mock-local-account-id',
+    localAccountId: 'mock-user-local-account-id',
     name: 'Demo User',
-  },
+    roles: ['User'],
+  }
+};
+
+// Default to admin for development
+const defaultMockProfile = mockProfiles.admin;
+
+// Create a mock for development purpose
+const createMockAuthResult = (profile = defaultMockProfile): AuthenticationResult => ({
+  authority: msalConfig.auth.authority,
+  uniqueId: profile.localAccountId,
+  tenantId: profile.tenantId,
+  scopes: ['User.Read', 'Directory.Read.All'],
+  account: profile,
   idToken: 'mock-id-token',
-  idTokenClaims: {},
+  idTokenClaims: {
+    roles: profile.roles
+  },
   accessToken: 'mock-access-token',
   fromCache: false,
   expiresOn: new Date(Date.now() + 3600 * 1000),
@@ -37,7 +57,9 @@ const mockAuthResult: AuthenticationResult = {
   familyId: '',
   tokenType: 'Bearer',
   correlationId: 'mock-correlation-id'
-};
+});
+
+const mockAuthResult = createMockAuthResult();
 
 // Initialize MSAL instance
 export const msalInstance = new PublicClientApplication(msalConfig);
@@ -47,14 +69,15 @@ export const isDevelopmentMode = true;
 
 // Login request with desired scopes
 const loginRequest = {
-  scopes: ['User.Read']
+  scopes: ['User.Read', 'Directory.Read.All']
 };
 
 // Function to handle login
-export const login = async (): Promise<AuthenticationResult> => {
+export const login = async (isAdmin = true): Promise<AuthenticationResult> => {
   if (isDevelopmentMode) {
     console.log('Using mock authentication for development');
-    return Promise.resolve(mockAuthResult);
+    const profile = isAdmin ? mockProfiles.admin : mockProfiles.user;
+    return Promise.resolve(createMockAuthResult(profile));
   }
   
   try {
@@ -119,4 +142,18 @@ export const isAuthenticated = (): boolean => {
   
   const accounts = msalInstance.getAllAccounts();
   return accounts.length > 0;
+};
+
+// Check if user is admin
+export const isUserAdmin = (): boolean => {
+  if (isDevelopmentMode) {
+    return mockAuthResult.account.name?.toLowerCase().includes('admin') || false;
+  }
+  
+  const accounts = msalInstance.getAllAccounts();
+  if (accounts.length === 0) return false;
+  
+  // In real implementation, check roles claim
+  // return accounts[0].idTokenClaims?.roles?.includes('Admin') || false;
+  return accounts[0].username?.toLowerCase().includes('admin') || false;
 };

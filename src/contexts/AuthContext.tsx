@@ -6,14 +6,16 @@ import {
   logout as msalLogout, 
   getCurrentUser as msalGetCurrentUser,
   isAuthenticated as msalIsAuthenticated,
-  isDevelopmentMode
+  isDevelopmentMode,
+  isUserAdmin
 } from '../services/authService';
 
 interface AuthContextType {
   user: AccountInfo | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
-  login: () => Promise<AuthenticationResult>;
+  login: (asAdmin?: boolean) => Promise<AuthenticationResult>;
   logout: () => void;
   isDevelopmentMode: boolean;
 }
@@ -22,6 +24,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AccountInfo | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,6 +34,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (msalIsAuthenticated()) {
           const currentUser = msalGetCurrentUser();
           setUser(currentUser);
+          setIsAdmin(isUserAdmin());
         }
       } catch (error) {
         console.error('Error during authentication initialization:', error);
@@ -42,11 +46,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     initializeAuth();
   }, []);
 
-  const handleLogin = async () => {
+  const handleLogin = async (asAdmin = true) => {
     setIsLoading(true);
     try {
-      const result = await msalLogin();
+      const result = await msalLogin(asAdmin);
       setUser(result.account);
+      setIsAdmin(isUserAdmin());
       return result;
     } finally {
       setIsLoading(false);
@@ -56,11 +61,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const handleLogout = () => {
     msalLogout();
     setUser(null);
+    setIsAdmin(false);
   };
 
   const value = {
     user,
     isAuthenticated: !!user,
+    isAdmin,
     isLoading,
     login: handleLogin,
     logout: handleLogout,

@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
@@ -14,72 +15,85 @@ import Backups from "./pages/Backups";
 import Restore from "./pages/Restore";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import TenantAdmin from "./pages/TenantAdmin";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Dashboard />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/tenants"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Tenants />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/backups"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Backups />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/restore"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Restore />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Settings />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tenants"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Tenants />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/backups"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Backups />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/restore"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Restore />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Settings />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <TenantAdmin />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
