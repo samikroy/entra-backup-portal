@@ -36,6 +36,48 @@ interface MetricsData {
   successRate: number;
 }
 
+// Dashboard metrics
+interface DashboardMetrics {
+  backupCount: number;
+  tenantsBackedUp: number;
+  objectsBackedUp: number;
+  lastBackupTime: Date;
+  backupStatus: 'success' | 'warning' | 'error' | 'pending';
+}
+
+// Restore point data
+interface RestorePoint {
+  id: string;
+  tenantId: string;
+  timestamp: Date;
+  status: 'completed' | 'failed' | 'in-progress';
+  objectsCaptured: {
+    users: number;
+    groups: number;
+    applications: number;
+    policies: number;
+    roles: number;
+  }
+}
+
+// Backup configuration
+interface BackupConfig {
+  tenantId: string;
+  frequency: 'daily' | 'weekly' | 'custom';
+  timeOfDay: string;
+  retentionDays: number;
+  objectTypes: {
+    users: boolean;
+    groups: boolean;
+    applications: boolean;
+    policies: boolean;
+    roles: boolean;
+  };
+  notifyOnFailure: boolean;
+  notifyOnSuccess: boolean;
+  notificationEmail: string;
+}
+
 // Mock tenants
 const tenants: Tenant[] = [
   {
@@ -156,6 +198,98 @@ const backupHistory: BackupHistory[] = [
   }
 ];
 
+// Mock restore points
+const restorePoints: RestorePoint[] = [
+  {
+    id: '1001',
+    tenantId: '1',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
+    status: 'completed',
+    objectsCaptured: {
+      users: 1250,
+      groups: 320,
+      applications: 48,
+      policies: 35,
+      roles: 15
+    }
+  },
+  {
+    id: '1002',
+    tenantId: '1',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+    status: 'completed',
+    objectsCaptured: {
+      users: 1248,
+      groups: 318,
+      applications: 48,
+      policies: 35,
+      roles: 15
+    }
+  },
+  {
+    id: '1003',
+    tenantId: '1',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+    status: 'completed',
+    objectsCaptured: {
+      users: 1240,
+      groups: 315,
+      applications: 47,
+      policies: 35,
+      roles: 15
+    }
+  },
+  {
+    id: '2001',
+    tenantId: '2',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
+    status: 'completed',
+    objectsCaptured: {
+      users: 750,
+      groups: 180,
+      applications: 32,
+      policies: 28,
+      roles: 12
+    }
+  }
+];
+
+// Default backup config
+const backupConfigs: Record<string, BackupConfig> = {
+  '1': {
+    tenantId: '1',
+    frequency: 'daily',
+    timeOfDay: '02:00',
+    retentionDays: 30,
+    objectTypes: {
+      users: true,
+      groups: true,
+      applications: true,
+      policies: true,
+      roles: true,
+    },
+    notifyOnFailure: true,
+    notifyOnSuccess: false,
+    notificationEmail: 'admin@contoso.com'
+  },
+  '2': {
+    tenantId: '2',
+    frequency: 'weekly',
+    timeOfDay: '03:00',
+    retentionDays: 60,
+    objectTypes: {
+      users: true,
+      groups: true,
+      applications: true,
+      policies: false,
+      roles: true,
+    },
+    notifyOnFailure: true,
+    notifyOnSuccess: true,
+    notificationEmail: 'it@fabrikam.com'
+  }
+};
+
 // Mock metrics data
 const metrics: MetricsData = {
   totalTenants: tenants.length,
@@ -170,6 +304,51 @@ const metrics: MetricsData = {
 export const getTenants = () => tenants;
 export const getBackupHistory = () => backupHistory;
 export const getMetrics = () => metrics;
+
+// Added functions for the dashboard, restore, and backups
+export const getDashboardMetrics = (): DashboardMetrics => {
+  const totalBackups = backupHistory.length;
+  const activeTenantsCount = tenants.filter(t => t.status === 'active').length;
+  const totalObjects = tenants.reduce((sum, tenant) => {
+    return sum + Object.values(tenant.objectCount).reduce((a, b) => a + b, 0);
+  }, 0);
+  const latestBackup = [...backupHistory].sort((a, b) => 
+    b.timestamp.getTime() - a.timestamp.getTime()
+  )[0];
+  
+  return {
+    backupCount: totalBackups,
+    tenantsBackedUp: activeTenantsCount,
+    objectsBackedUp: totalObjects,
+    lastBackupTime: latestBackup?.timestamp || new Date(),
+    backupStatus: latestBackup?.status === 'completed' ? 'success' : 'warning'
+  };
+};
+
+export const getRestorePoints = (tenantId: string): RestorePoint[] => {
+  return restorePoints.filter(point => point.tenantId === tenantId)
+    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+};
+
+export const getBackupConfig = (tenantId: string): BackupConfig => {
+  return backupConfigs[tenantId] || {
+    tenantId: tenantId,
+    frequency: 'daily',
+    timeOfDay: '01:00',
+    retentionDays: 30,
+    objectTypes: {
+      users: true,
+      groups: true,
+      applications: true,
+      policies: true,
+      roles: true,
+    },
+    notifyOnFailure: true,
+    notifyOnSuccess: false,
+    notificationEmail: 'admin@example.com'
+  };
+};
+
 export const formatDate = (date: Date) => {
   return date.toLocaleString('en-US', { 
     year: 'numeric', 
