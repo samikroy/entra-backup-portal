@@ -31,7 +31,7 @@ const Sidebar = () => {
   return (
     <div className="hidden md:flex flex-col w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
       <div className="p-6">
-        <h2 className="text-xl font-bold text-sidebar-primary">Entra Vault Keeper</h2>
+        <h2 className="text-xl font-bold text-sidebar-primary">Entra backup</h2>
         <p className="text-xs text-sidebar-foreground/70 mt-1">Secure Backup & Restore</p>
       </div>
       
