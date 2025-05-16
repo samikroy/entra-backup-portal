@@ -3,9 +3,9 @@ import { PublicClientApplication, AuthenticationResult, AccountInfo, SilentReque
 
 const msalConfig = {
   auth: {
-    clientId: 'YOUR_CLIENT_ID', // Replace with your Azure AD app registration client ID
-    authority: 'https://login.microsoftonline.com/common', // Multi-tenant auth
-    redirectUri: window.location.origin,
+    clientId: '34d33d5b-e282-4269-9512-2dd2a3183796', // Replace with your Azure AD app registration client ID
+    authority: 'https://login.microsoftonline.com/9c282820-5736-4f81-91f0-4f5aa992a234', // Multi-tenant auth
+    redirectUri: "http://localhost:8080/login", // Replace with your redirect URI
   },
   cache: {
     cacheLocation: 'sessionStorage',
@@ -65,7 +65,17 @@ const mockAuthResult = createMockAuthResult();
 export const msalInstance = new PublicClientApplication(msalConfig);
 
 // For development without an actual Azure AD tenant
-export const isDevelopmentMode = true;
+export const isDevelopmentMode = false;
+
+let isInitialized = false;
+
+const initialize = async () => {
+  if (!isInitialized) {
+    await msalInstance.initialize();
+    isInitialized = true;
+  }
+};
+let loginInProgress = false;
 
 // Login request with desired scopes
 const loginRequest = {
@@ -79,15 +89,28 @@ export const login = async (isAdmin = true): Promise<AuthenticationResult> => {
     const profile = isAdmin ? mockProfiles.admin : mockProfiles.user;
     return Promise.resolve(createMockAuthResult(profile));
   }
-  
+
   try {
+    await initialize();
+    await msalInstance.handleRedirectPromise();
+
+    if (loginInProgress) {
+      console.warn('Login already in progress, please wait');
+      return;
+    }
+    loginInProgress = true;
+
     const loginResponse = await msalInstance.loginPopup(loginRequest);
+    console.log('Login successful:', loginResponse);
     return loginResponse;
   } catch (err) {
     console.error('Login failed:', err);
     throw err;
+  } finally {
+    loginInProgress = false;
   }
 };
+
 
 // Function to get token silently
 export const getToken = async (): Promise<string | null> => {
@@ -115,13 +138,13 @@ export const getToken = async (): Promise<string | null> => {
 };
 
 // Function to handle logout
-export const logout = (): void => {
+export const logout = async (): Promise<void> => {
   if (isDevelopmentMode) {
     console.log('Mock logout successful');
     return;
   }
-  
-  msalInstance.logout();
+  await initialize();
+  await msalInstance.logout();
 };
 
 // Get current user info
@@ -129,7 +152,7 @@ export const getCurrentUser = (): AccountInfo | null => {
   if (isDevelopmentMode) {
     return mockAuthResult.account;
   }
-  
+
   const accounts = msalInstance.getAllAccounts();
   return accounts.length > 0 ? accounts[0] : null;
 };
@@ -139,7 +162,7 @@ export const isAuthenticated = (): boolean => {
   if (isDevelopmentMode) {
     return true; // Always authenticated in dev mode
   }
-  
+
   const accounts = msalInstance.getAllAccounts();
   return accounts.length > 0;
 };
@@ -149,10 +172,10 @@ export const isUserAdmin = (): boolean => {
   if (isDevelopmentMode) {
     return mockAuthResult.account.name?.toLowerCase().includes('admin') || false;
   }
-  
+
   const accounts = msalInstance.getAllAccounts();
   if (accounts.length === 0) return false;
-  
+
   // In real implementation, check roles claim
   // return accounts[0].idTokenClaims?.roles?.includes('Admin') || false;
   return accounts[0].username?.toLowerCase().includes('admin') || false;

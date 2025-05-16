@@ -4,17 +4,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import Logo from './Logo';
 import MainNav from './MainNav';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Moon, Sun, Palette, Circle } from 'lucide-react';
 
 const Header = () => {
-  const { user, logout, isDevelopmentMode } = useAuth();
+  const { user, isAdmin, logout, isDevelopmentMode } = useAuth();
   const { theme, setTheme } = useTheme();
+  console.log("user", user);
+  console.log("isadmin", isAdmin);
 
   const themes = [
     { name: 'Light', value: 'light', icon: <Sun className="h-4 w-4 mr-2" /> },
@@ -42,8 +44,8 @@ const Header = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {themes.map((t) => (
-                <DropdownMenuItem 
-                  key={t.value} 
+                <DropdownMenuItem
+                  key={t.value}
                   onClick={() => setTheme(t.value as any)}
                   className={theme === t.value ? "bg-accent text-accent-foreground" : ""}
                 >
@@ -53,7 +55,7 @@ const Header = () => {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <div className="flex items-center gap-4">
             {isDevelopmentMode && (
               <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-md">Dev Mode</span>
