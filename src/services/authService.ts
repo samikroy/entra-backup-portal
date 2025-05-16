@@ -5,7 +5,7 @@ const msalConfig = {
   auth: {
     clientId: '34d33d5b-e282-4269-9512-2dd2a3183796', // Replace with your Azure AD app registration client ID
     authority: 'https://login.microsoftonline.com/9c282820-5736-4f81-91f0-4f5aa992a234', // Multi-tenant auth
-    redirectUri: "http://localhost:8080/login", // Replace with your redirect URI
+    redirectUri: "https://entra-backup-portal.vercel.app/login", // Replace with your redirect URI
   },
   cache: {
     cacheLocation: 'sessionStorage',
