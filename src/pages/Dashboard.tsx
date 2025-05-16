@@ -16,7 +16,7 @@ const Dashboard = () => {
           Overview of your Entra ID backups across all tenants.
         </p>
       </div>
-      
+
       <Card>
         <CardHeader className="flex flex-row items-center">
           <div className="grid gap-2">
@@ -29,21 +29,21 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
-            <MetricCard 
-              title="Total Backups" 
-              value={metrics.backupCount.toLocaleString()} 
+            <MetricCard
+              title="Total Backups"
+              value={metrics.backupCount.toLocaleString()}
             />
-            <MetricCard 
-              title="Objects Backed Up" 
-              value={metrics.objectsBackedUp.toLocaleString()} 
+            <MetricCard
+              title="Objects Backed Up"
+              value={metrics.objectsBackedUp.toLocaleString()}
             />
-            <MetricCard 
-              title="Tenants Backed Up" 
-              value={metrics.tenantsBackedUp} 
+            <MetricCard
+              title="Tenants Backed Up"
+              value={metrics.tenantsBackedUp}
             />
-            <MetricCard 
-              title="Last Backup Time" 
-              value={formatDate(metrics.lastBackupTime)} 
+            <MetricCard
+              title="Last Backup Time"
+              value={formatDate(metrics.lastBackupTime)}
             />
           </div>
         </CardContent>

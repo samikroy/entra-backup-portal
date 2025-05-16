@@ -1,13 +1,14 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AccountInfo, AuthenticationResult } from '@azure/msal-browser';
-import { 
-  login as msalLogin, 
-  logout as msalLogout, 
+import {
+  login as msalLogin,
+  logout as msalLogout,
   getCurrentUser as msalGetCurrentUser,
   isAuthenticated as msalIsAuthenticated,
   isDevelopmentMode,
-  isUserAdmin
+  isUserAdmin,
+  getToken as msalGetToken
 } from '../services/authService';
 
 interface AuthContextType {
@@ -18,6 +19,7 @@ interface AuthContextType {
   login: (asAdmin?: boolean) => Promise<AuthenticationResult>;
   logout: () => void;
   isDevelopmentMode: boolean;
+  msalGetToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +28,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<AccountInfo | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     // On component mount, check if user is already authenticated
@@ -52,6 +55,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const result = await msalLogin(asAdmin);
       setUser(result.account);
       setIsAdmin(isUserAdmin());
+
+      const token = await msalGetToken();
+      console.log("Access Token:", token);
       return result;
     } finally {
       setIsLoading(false);
@@ -71,7 +77,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isLoading,
     login: handleLogin,
     logout: handleLogout,
-    isDevelopmentMode
+    isDevelopmentMode,
+    msalGetToken
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
