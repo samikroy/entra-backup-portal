@@ -312,10 +312,10 @@ export const getDashboardMetrics = (): DashboardMetrics => {
   const totalObjects = tenants.reduce((sum, tenant) => {
     return sum + Object.values(tenant.objectCount).reduce((a, b) => a + b, 0);
   }, 0);
-  const latestBackup = [...backupHistory].sort((a, b) => 
+  const latestBackup = [...backupHistory].sort((a, b) =>
     b.timestamp.getTime() - a.timestamp.getTime()
   )[0];
-  
+
   return {
     backupCount: totalBackups,
     tenantsBackedUp: activeTenantsCount,
@@ -350,11 +350,13 @@ export const getBackupConfig = (tenantId: string): BackupConfig => {
 };
 
 export const formatDate = (date: Date) => {
-  return date.toLocaleString('en-US', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric', 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  return new Date(date).toLocaleString("en-US", {
+    timeZone: "UTC",
+    month: "long",      // May
+    day: "2-digit",     // 15
+    year: "numeric",    // 2025
+    hour: "2-digit",    // 07
+    minute: "2-digit",  // 46
+    hour12: true        // PM
   });
 };

@@ -2,6 +2,10 @@
 import { PublicClientApplication, AuthenticationResult, AccountInfo, SilentRequest } from '@azure/msal-browser';
 
 const localDevelopement: boolean = false;
+
+// For development without an actual Azure AD tenant
+export const isDevelopmentMode = false;
+
 let REDIRECTURI = ""
 
 if (localDevelopement) {
@@ -73,8 +77,7 @@ const mockAuthResult = createMockAuthResult();
 // Initialize MSAL instance
 export const msalInstance = new PublicClientApplication(msalConfig);
 
-// For development without an actual Azure AD tenant
-export const isDevelopmentMode = false;
+
 
 let isInitialized = false;
 
