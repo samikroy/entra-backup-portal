@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type BackupStatus = 'success' | 'warning' | 'error' | 'pending';
+export type BackupStatus = 'success' | 'warning' | 'error' | 'pending';
 
 interface BackupStatusBadgeProps {
   status: BackupStatus;
