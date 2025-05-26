@@ -49,6 +49,10 @@ const Dashboard = () => {
           }),
         });
         if (!response.ok) {
+          setMetrics((prev) => ({
+            ...prev,
+            backupStatus: "error",
+          }));
           throw new Error('Network response was not ok');
         }
         const text = await response.text();
@@ -58,6 +62,10 @@ const Dashboard = () => {
         const data = JSON.parse(text);
         return data;
       } catch (error) {
+        setMetrics((prev) => ({
+          ...prev,
+          backupStatus: "error",
+        }));
         console.error('Error fetching metrics:', error);
         return null;
       }

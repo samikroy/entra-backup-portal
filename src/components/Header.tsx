@@ -15,8 +15,8 @@ import { Moon, Sun, Palette, Circle } from 'lucide-react';
 const Header = () => {
   const { user, isAdmin, logout, isDevelopmentMode } = useAuth();
   const { theme, setTheme } = useTheme();
-  console.log("user", user);
-  console.log("isadmin", isAdmin);
+  // console.log("user", user);
+  // console.log("isadmin", isAdmin);
 
   const themes = [
     { name: 'Light', value: 'light', icon: <Sun className="h-4 w-4 mr-2" /> },

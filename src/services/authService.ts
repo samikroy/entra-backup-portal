@@ -113,7 +113,7 @@ export const login = async (isAdmin = true): Promise<AuthenticationResult> => {
     loginInProgress = true;
 
     const loginResponse = await msalInstance.loginPopup(loginRequest);
-    console.log('Login successful:', loginResponse);
+    // console.log('Login successful:', loginResponse);
     return loginResponse;
   } catch (err) {
     console.error('Login failed:', err);
