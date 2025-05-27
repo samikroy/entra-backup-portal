@@ -3,32 +3,75 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getTenants, getBackupConfig } from "@/services/mockDataService";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const Backups = () => {
   const tenants = getTenants();
   const { toast } = useToast();
-  
+
   const firstTenant = tenants[0];
   const config = getBackupConfig(firstTenant.id);
+  const [currentConfig, setCurrentConfig] = useState(
+    {
+      timeOfDay: '01:00',
+      objectTypes: {
+        users: false,
+        groups: false,
+        applications: false,
+        servicePrincipals: false,
+        domains: false,
+        identity: false,
+        roles: false,
+      },
+    }
+  )
 
-  const handleSaveConfig = () => {
-    toast({
-      title: "Configuration saved",
-      description: "Your backup configuration has been saved successfully.",
-    });
+  const handleSaveConfig = async () => {
+    const newTypes = Object.entries(currentConfig.objectTypes)
+      .filter(([_, value]) => value)
+      .map(([key]) => key)
+      .join(',');
+
+    // Format NewDateTime as "YYYY-MM-DD HH:mm"
+    const today = new Date();
+    const dateStr = today.toISOString().slice(0, 10); // "YYYY-MM-DD"
+    const newDateTime = `${dateStr} ${currentConfig.timeOfDay}`;
+
+    try {
+      console.log("Saving configuration:", {
+        newDateTime,
+        newTypes,
+      });
+      const response = await fetch('https://fn-entra-backup-srever-dev.azurewebsites.net/api/ManageSchedule?', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          NewDateTime: newDateTime,
+          newTypes: newTypes,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to save schedule');
+      }
+      console.log(response.status)
+      // Optionally handle response here
+      toast({
+        title: "Configuration saved",
+        description: "Your backup configuration has been saved successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save backup configuration.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleRunBackup = () => {
@@ -53,7 +96,7 @@ const Backups = () => {
           <TabsTrigger value="history">History</TabsTrigger>
           <TabsTrigger value="logs">Logs</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="configure" className="mt-6">
           <Card>
             <CardHeader>
@@ -81,7 +124,16 @@ const Backups = () => {
                         </div>
                         <div className="space-y-2">
                           <label className="text-sm font-medium" htmlFor="timeOfDay">Time of Day</label>
-                          <Input defaultValue={config.timeOfDay} type="time" />
+                          <Input
+                            defaultValue={currentConfig.timeOfDay}
+                            onChange={(e) =>
+                              setCurrentConfig((prev) => ({
+                                ...prev,
+                                timeOfDay: e.target.value,
+                              }))
+                            }
+                            type="time"
+                          />
                         </div>
                       </div>
                       <div className="space-y-2">
@@ -90,28 +142,105 @@ const Backups = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-lg font-medium mb-4">Objects to Backup</h3>
                     <div className="grid gap-4">
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="users" defaultChecked={config.objectTypes.users} />
+                        <Checkbox
+                          id="users"
+                          checked={currentConfig.objectTypes.users}
+                          onCheckedChange={() => setCurrentConfig((prev) => ({
+                            ...prev,
+                            objectTypes: {
+                              ...prev.objectTypes,
+                              users: !currentConfig.objectTypes.users,
+                            },
+                          }))} />
                         <label className="text-sm font-medium" htmlFor="users">Users</label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="groups" defaultChecked={config.objectTypes.groups} />
+                        <Checkbox
+                          id="groups"
+                          defaultChecked={currentConfig.objectTypes.groups}
+                          onCheckedChange={() => setCurrentConfig((prev) => ({
+                            ...prev,
+                            objectTypes: {
+                              ...prev.objectTypes,
+                              groups: !currentConfig.objectTypes.groups,
+                            },
+                          }))}
+                        />
                         <label className="text-sm font-medium" htmlFor="groups">Groups</label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="applications" defaultChecked={config.objectTypes.applications} />
+                        <Checkbox
+                          id="applications"
+                          defaultChecked={currentConfig.objectTypes.applications}
+                          onCheckedChange={() => setCurrentConfig((prev) => ({
+                            ...prev,
+                            objectTypes: {
+                              ...prev.objectTypes,
+                              applications: !currentConfig.objectTypes.applications,
+                            },
+                          }))}
+                        />
                         <label className="text-sm font-medium" htmlFor="applications">Applications</label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="policies" defaultChecked={config.objectTypes.policies} />
-                        <label className="text-sm font-medium" htmlFor="policies">Policies</label>
+                        <Checkbox
+                          id="policies"
+                          defaultChecked={currentConfig.objectTypes.servicePrincipals}
+                          onCheckedChange={() => setCurrentConfig((prev) => ({
+                            ...prev,
+                            objectTypes: {
+                              ...prev.objectTypes,
+                              servicePrincipals: !currentConfig.objectTypes.servicePrincipals,
+                            },
+                          }))}
+                        />
+                        <label className="text-sm font-medium" htmlFor="policies">ServicePrincipals</label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="roles" defaultChecked={config.objectTypes.roles} />
+                        <Checkbox
+                          id="policies"
+                          defaultChecked={currentConfig.objectTypes.domains}
+                          onCheckedChange={() => setCurrentConfig((prev) => ({
+                            ...prev,
+                            objectTypes: {
+                              ...prev.objectTypes,
+                              domains: !currentConfig.objectTypes.domains,
+                            },
+                          }))}
+                        />
+                        <label className="text-sm font-medium" htmlFor="policies">Domains</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="policies"
+                          defaultChecked={currentConfig.objectTypes.identity}
+                          onCheckedChange={() => setCurrentConfig((prev) => ({
+                            ...prev,
+                            objectTypes: {
+                              ...prev.objectTypes,
+                              identity: !currentConfig.objectTypes.identity,
+                            },
+                          }))}
+                        />
+                        <label className="text-sm font-medium" htmlFor="policies">Identity</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="roles"
+                          defaultChecked={currentConfig.objectTypes.roles}
+                          onCheckedChange={() => setCurrentConfig((prev) => ({
+                            ...prev,
+                            objectTypes: {
+                              ...prev.objectTypes,
+                              roles: !currentConfig.objectTypes.roles,
+                            },
+                          }))}
+                        />
                         <label className="text-sm font-medium" htmlFor="roles">Roles</label>
                       </div>
                     </div>
@@ -144,7 +273,7 @@ const Backups = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="history" className="mt-6">
           <Card>
             <CardHeader>
@@ -157,7 +286,7 @@ const Backups = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="logs" className="mt-6">
           <Card>
             <CardHeader>
