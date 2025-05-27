@@ -32,6 +32,10 @@ const Dashboard = () => {
   // write a fetch request with body should send data in json format
   useEffect(() => {
     console.log("Fetching metrics...");
+    setMetrics((prev) => ({
+      ...prev,
+      backupStatus: "pending",
+    }));
     const fetchMetrics = async (query) => {
       try {
         const response = await fetch('https://fn-entra-backup-srever-dev.azurewebsites.net/api/GetUserLogs?', {
@@ -45,6 +49,10 @@ const Dashboard = () => {
           }),
         });
         if (!response.ok) {
+          setMetrics((prev) => ({
+            ...prev,
+            backupStatus: "error",
+          }));
           throw new Error('Network response was not ok');
         }
         const text = await response.text();
@@ -54,6 +62,10 @@ const Dashboard = () => {
         const data = JSON.parse(text);
         return data;
       } catch (error) {
+        setMetrics((prev) => ({
+          ...prev,
+          backupStatus: "error",
+        }));
         console.error('Error fetching metrics:', error);
         return null;
       }
@@ -78,6 +90,7 @@ const Dashboard = () => {
         tenantsBackedUp: tenantsBackedUpData ? tenantsBackedUpData.tables[0].rows[0][0] : 0,
         objectsBackedUp: objectsBackedUpData ? objectsBackedUpData.tables[0].rows[0][0] : 0,
         totalBackups: totalBackupsData ? totalBackupsData.tables[0].rows[0][0] : 0,
+        backupStatus: "success"
       }));
       console.log("Metrics fetched successfully");
     };

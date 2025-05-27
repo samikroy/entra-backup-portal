@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setIsAdmin(isUserAdmin());
 
       const token = await msalGetToken();
-      console.log("Access Token:", token);
+      // console.log("Access Token:", token);
       return result;
     } finally {
       setIsLoading(false);
