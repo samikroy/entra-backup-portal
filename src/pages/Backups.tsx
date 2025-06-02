@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Backups = () => {
   const tenants = getTenants();
@@ -15,6 +15,7 @@ const Backups = () => {
 
   const firstTenant = tenants[0];
   const config = getBackupConfig(firstTenant.id);
+  const [loadingAllTypes, setLoadingAllTypes] = useState(false);
   const [currentConfig, setCurrentConfig] = useState(
     {
       timeOfDay: '01:00',
@@ -75,11 +76,75 @@ const Backups = () => {
   };
 
   const handleRunBackup = () => {
-    toast({
-      title: "Backup initiated",
-      description: "Backup job has been queued and will run shortly.",
-    });
+    // make a fetch request to the API to run the backup
+    fetch('https://fn-entra-backup-srever-dev.azurewebsites.net/api/TriggerEntraExploreWorkflow?', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => {
+        console.log("Response status:", response.ok);
+        console.log("Response ", response)
+        if (!response.ok) {
+          throw new Error('Failed to initiate backup');
+        }
+        return response.text();
+      })
+      .then(data => {
+        console.log("Backup initiated successfully:", data);
+        toast({
+          title: "Backup initiated",
+          description: "Backup job has been queued and will run shortly.",
+        });
+      })
+      .catch(error => {
+        console.error("Error initiating backup:", error);
+        toast({
+          title: "Error",
+          description: "Failed to initiate backup.",
+          variant: "destructive",
+        });
+      });
+
   };
+
+  useEffect(() => {
+    setLoadingAllTypes(true);
+    // fetch the current backup configuration and update the currentconfig in object types
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch(`https://fn-entra-backup-srever-dev.azurewebsites.net/api/ReadObjectTypes?`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch backup configuration');
+        }
+        // console.log(response.result)
+        const data = await response.text();
+        const enabledTypes = data
+          .split(',')
+          .map(s => s.trim().toLowerCase());
+        console.log(enabledTypes.includes('serviceprincipals'))
+        // update currentconfig using setcurrentconfig - turn object types true if present in enabledTypes
+        setCurrentConfig((prev) => ({
+          ...prev,
+          objectTypes: {
+            users: enabledTypes.includes('users'),
+            groups: enabledTypes.includes('groups'),
+            applications: enabledTypes.includes('applications'),
+            servicePrincipals: enabledTypes.includes('serviceprincipals'),
+            domains: enabledTypes.includes('domains'),
+            identity: enabledTypes.includes('identity'),
+            roles: enabledTypes.includes('roles'),
+          },
+        }));
+      } catch (error) {
+        console.error("Error fetching backup configuration:", error);
+      } finally {
+        setLoadingAllTypes(false);
+      }
+    }
+    fetchConfig()
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -145,7 +210,10 @@ const Backups = () => {
 
                   <div>
                     <h3 className="text-lg font-medium mb-4">Objects to Backup</h3>
-                    <div className="grid gap-4">
+                    {loadingAllTypes && (
+                      <div className="text-sm text-muted-foreground mt-2">Loading all object types...</div>
+                    )}
+                    <div className="grid gap-4" style={{ "opacity": loadingAllTypes ? 0.5 : 1, "pointerEvents": loadingAllTypes ? "none" : "auto" }}>
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="users"
@@ -162,7 +230,7 @@ const Backups = () => {
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="groups"
-                          defaultChecked={currentConfig.objectTypes.groups}
+                          checked={currentConfig.objectTypes.groups}
                           onCheckedChange={() => setCurrentConfig((prev) => ({
                             ...prev,
                             objectTypes: {
@@ -176,7 +244,7 @@ const Backups = () => {
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="applications"
-                          defaultChecked={currentConfig.objectTypes.applications}
+                          checked={currentConfig.objectTypes.applications}
                           onCheckedChange={() => setCurrentConfig((prev) => ({
                             ...prev,
                             objectTypes: {
@@ -190,7 +258,7 @@ const Backups = () => {
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="policies"
-                          defaultChecked={currentConfig.objectTypes.servicePrincipals}
+                          checked={currentConfig.objectTypes.servicePrincipals}
                           onCheckedChange={() => setCurrentConfig((prev) => ({
                             ...prev,
                             objectTypes: {
@@ -204,7 +272,7 @@ const Backups = () => {
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="policies"
-                          defaultChecked={currentConfig.objectTypes.domains}
+                          checked={currentConfig.objectTypes.domains}
                           onCheckedChange={() => setCurrentConfig((prev) => ({
                             ...prev,
                             objectTypes: {
@@ -218,7 +286,7 @@ const Backups = () => {
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="policies"
-                          defaultChecked={currentConfig.objectTypes.identity}
+                          checked={currentConfig.objectTypes.identity}
                           onCheckedChange={() => setCurrentConfig((prev) => ({
                             ...prev,
                             objectTypes: {
@@ -232,7 +300,7 @@ const Backups = () => {
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="roles"
-                          defaultChecked={currentConfig.objectTypes.roles}
+                          checked={currentConfig.objectTypes.roles}
                           onCheckedChange={() => setCurrentConfig((prev) => ({
                             ...prev,
                             objectTypes: {
@@ -251,11 +319,11 @@ const Backups = () => {
                   <h3 className="text-lg font-medium mb-4">Notifications</h3>
                   <div className="grid gap-4">
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="notifyFailure" defaultChecked={config.notifyOnFailure} />
+                      <Checkbox id="notifyFailure" checked={config.notifyOnFailure} />
                       <label className="text-sm font-medium" htmlFor="notifyFailure">Notify on failure</label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="notifySuccess" defaultChecked={config.notifyOnSuccess} />
+                      <Checkbox id="notifySuccess" checked={config.notifyOnSuccess} />
                       <label className="text-sm font-medium" htmlFor="notifySuccess">Notify on success</label>
                     </div>
                     <div className="space-y-2">

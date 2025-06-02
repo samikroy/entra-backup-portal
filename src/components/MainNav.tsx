@@ -9,23 +9,23 @@ interface MainNavProps {
 
 const MainNav: React.FC<MainNavProps> = ({ className }) => {
   const { user, isDevelopmentMode } = useAuth();
-  
+
   // Check if user is admin (for demo purposes)
   const isAdmin = user?.name?.toLowerCase().includes('admin') || isDevelopmentMode;
-  
+
   const navItems = [
     { name: "Dashboard", href: "/" },
     { name: "Tenants", href: "/tenants" },
     { name: "Backups", href: "/backups" },
     { name: "Restore", href: "/restore" },
-    { name: "Settings", href: "/settings" },
+    // { name: "Settings", href: "/settings" },
   ];
-  
+
   // Add admin link for admins only
   if (isAdmin) {
     navItems.push({ name: "Admin", href: "/admin" });
   }
-  
+
   return (
     <nav className={cn("flex items-center space-x-4 lg:space-x-6", className)}>
       {navItems.map((item) => (

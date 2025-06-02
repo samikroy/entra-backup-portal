@@ -69,7 +69,7 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              <Route
+              {/* <Route
                 path="/settings"
                 element={
                   <ProtectedRoute>
@@ -78,7 +78,7 @@ const App = () => (
                     </Layout>
                   </ProtectedRoute>
                 }
-              />
+              /> */}
               <Route
                 path="/admin"
                 element={
