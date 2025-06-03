@@ -2,11 +2,11 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
-import { 
-  LayoutDashboard, 
-  Server, 
-  Save, 
-  History, 
+import {
+  LayoutDashboard,
+  Server,
+  Save,
+  History,
   Settings as SettingsIcon,
   Users
 } from 'lucide-react';
@@ -21,7 +21,7 @@ const Sidebar = () => {
     { name: 'Tenants', path: '/tenants', icon: <Server className="h-5 w-5" /> },
     { name: 'Backups', path: '/backups', icon: <Save className="h-5 w-5" /> },
     { name: 'Restore', path: '/restore', icon: <History className="h-5 w-5" /> },
-    { name: 'Settings', path: '/settings', icon: <SettingsIcon className="h-5 w-5" /> },
+    // { name: 'Settings', path: '/settings', icon: <SettingsIcon className="h-5 w-5" /> },
   ];
 
   if (isAdmin) {
@@ -34,7 +34,7 @@ const Sidebar = () => {
         <h2 className="text-xl font-bold text-sidebar-primary">Entra backup</h2>
         <p className="text-xs text-sidebar-foreground/70 mt-1">Secure Backup & Restore</p>
       </div>
-      
+
       <nav className="flex-1 px-4 pb-4">
         <ul className="space-y-1">
           {navItems.map((item) => (
@@ -43,8 +43,8 @@ const Sidebar = () => {
                 to={item.path}
                 className={({ isActive }) => cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 transition-all",
-                  isActive 
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" 
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                     : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
                 )}
               >
@@ -55,7 +55,7 @@ const Sidebar = () => {
           ))}
         </ul>
       </nav>
-      
+
       <div className="p-4 border-t border-sidebar-border">
         <div className="text-xs text-sidebar-foreground/70">
           {isDevelopmentMode ? 'Development Mode' : 'Production Mode'}
