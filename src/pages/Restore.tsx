@@ -13,6 +13,7 @@ const Restore = () => {
   const tenants = getTenants();
   const [selectedTenantId, setSelectedTenantId] = useState(tenants[0].id);
   const [selectedRestorePointId, setSelectedRestorePointId] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(false);
   const restorePoints = getRestorePoints(selectedTenantId);
   const { toast } = useToast();
 
@@ -25,7 +26,7 @@ const Restore = () => {
     setSelectedRestorePointId(id === selectedRestorePointId ? null : id);
   };
 
-  const handleStartRestore = () => {
+  const handleStartRestore = async () => {
     if (!selectedRestorePointId) {
       toast({
         title: "No restore point selected",
@@ -34,10 +35,76 @@ const Restore = () => {
       });
       return;
     }
+    setRestoring(true);
+    // Define restore payloads for each object type
+    const restorePayloads = [
+      {
+        link: "https://fn-entra-backup-srever-dev.azurewebsites.net/api/GetUserLogs?",
+        objectType: "users",
+        fetchBody: {
+          workspaceId: "ad0ea146-ac18-46ac-bf5b-fd406e63e548",
+          query: "AzureEntraBackup_CL | where isnotempty(userPrincipalName_s) | summarize arg_max(TimeGenerated, *) by id_g"
+        }
+      },
+      {
+        link: "https://fn-entra-backup-srever-dev.azurewebsites.net/api/GetUserLogs?",
+        objectType: "groups",
+        fetchBody: {
+          workspaceId: "ad0ea146-ac18-46ac-bf5b-fd406e63e548",
+          query: "AzureEntraBackup_CL | where isnotempty(groupTypes_s) | summarize arg_max(TimeGenerated, *) by id_g"
+        }
+      },
+      {
+        link: "https://fn-entra-backup-srever-dev.azurewebsites.net/api/GetUserLogs?",
+        objectType: "applications",
+        fetchBody: {
+          workspaceId: "ad0ea146-ac18-46ac-bf5b-fd406e63e548",
+          query: "AzureEntraBackup_CL | where isnotempty(appId_g) and isempty(servicePrincipalType_s) | summarize arg_max(TimeGenerated, *) by id_g"
+        }
+      },
+      // {
+      //   link: "https://fn-entra-backup-srever-dev.azurewebsites.net/api/GetUserLogs?",
+      //   objectType: "serviceprincipals",
+      //   fetchBody: {
+      //     workspaceId: "ad0ea146-ac18-46ac-bf5b-fd406e63e548",
+      //     query: "AzureEntraBackup_CL | where isnotempty(appId_g) and isnotempty(servicePrincipalType_s)| summarize arg_max(TimeGenerated, *) by id_g | take 10"
+      //   }
+      // }
+    ];
 
+    for (const payload of restorePayloads) {
+      try {
+        toast({
+          title: `Restore initiated for ${payload.objectType}`,
+          description: `Restore operation for ${payload.objectType} has been queued.`,
+        });
+        const response = await fetch("https://fn-entra-backup-srever-dev.azurewebsites.net/api/RestoreData?", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to restore ${payload.objectType}`);
+        }
+        toast({
+          title: `Restore completed for ${payload.objectType}`,
+          description: `Restore operation for ${payload.objectType} has been completed.`,
+        });
+      } catch (error) {
+        toast({
+          title: `Error restoring ${payload.objectType}`,
+          description: String(error),
+          variant: "destructive",
+        });
+      }
+    }
+
+    setRestoring(false);
     toast({
-      title: "Restore initiated",
-      description: "Your restore operation has been queued and will start shortly.",
+      title: "Restoration completed",
+      description: "All restore operations have been completed.",
     });
   };
 
@@ -77,7 +144,7 @@ const Restore = () => {
 
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Available Restore Points</h3>
-              
+
               <div className="border rounded-md overflow-hidden">
                 <Table>
                   <TableHeader>
@@ -94,16 +161,16 @@ const Restore = () => {
                   </TableHeader>
                   <TableBody>
                     {restorePoints.map((point) => (
-                      <TableRow 
-                        key={point.id} 
+                      <TableRow
+                        key={point.id}
                         className={selectedRestorePointId === point.id ? "bg-muted" : ""}
                         onClick={() => handleRestorePointSelect(point.id)}
                       >
                         <TableCell>
-                          <input 
-                            type="radio" 
-                            checked={selectedRestorePointId === point.id} 
-                            onChange={() => handleRestorePointSelect(point.id)} 
+                          <input
+                            type="radio"
+                            checked={selectedRestorePointId === point.id}
+                            onChange={() => handleRestorePointSelect(point.id)}
                           />
                         </TableCell>
                         <TableCell className="font-medium">{formatDate(point.timestamp)}</TableCell>
@@ -125,8 +192,11 @@ const Restore = () => {
             </div>
 
             <div className="flex justify-end space-x-2 pt-4">
-              <Button onClick={handleStartRestore} disabled={!selectedRestorePointId}>
-                Start Restore
+              <Button
+                onClick={handleStartRestore}
+                disabled={!selectedRestorePointId || restoring}
+              >
+                {restoring ? "Restoring..." : "Start Restore"}
               </Button>
             </div>
           </div>
