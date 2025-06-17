@@ -149,17 +149,17 @@ const Backups = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Backups</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
         <p className="text-muted-foreground">
-          Configure and manage your Entra ID backups.
+          Configure and manage your Entra ID backups settings.
         </p>
       </div>
 
       <Tabs defaultValue="configure">
         <TabsList>
           <TabsTrigger value="configure">Configure</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
-          <TabsTrigger value="logs">Logs</TabsTrigger>
+          {/* <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="configure" className="mt-6">

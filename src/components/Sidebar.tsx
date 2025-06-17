@@ -19,7 +19,7 @@ const Sidebar = () => {
   const navItems = [
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard className="h-5 w-5" /> },
     { name: 'Tenants', path: '/tenants', icon: <Server className="h-5 w-5" /> },
-    { name: 'Backups', path: '/backups', icon: <Save className="h-5 w-5" /> },
+    { name: 'Settings', path: '/settings', icon: <Save className="h-5 w-5" /> },
     { name: 'Restore', path: '/restore', icon: <History className="h-5 w-5" /> },
     // { name: 'Settings', path: '/settings', icon: <SettingsIcon className="h-5 w-5" /> },
   ];

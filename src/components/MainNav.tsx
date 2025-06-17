@@ -16,7 +16,7 @@ const MainNav: React.FC<MainNavProps> = ({ className }) => {
   const navItems = [
     { name: "Dashboard", href: "/" },
     { name: "Tenants", href: "/tenants" },
-    { name: "Backups", href: "/backups" },
+    { name: "Settings", href: "/settings" },
     { name: "Restore", href: "/restore" },
     // { name: "Settings", href: "/settings" },
   ];
