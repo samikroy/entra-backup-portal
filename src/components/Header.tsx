@@ -31,7 +31,6 @@ const Header = () => {
         <div className="md:hidden">
           <Logo />
         </div>
-        <MainNav className="hidden md:flex mx-6" />
         <div className="ml-auto flex items-center space-x-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

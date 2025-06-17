@@ -50,7 +50,7 @@ const App = () => (
                 }
               />
               <Route
-                path="/backups"
+                path="/settings"
                 element={
                   <ProtectedRoute>
                     <Layout>
