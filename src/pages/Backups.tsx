@@ -203,7 +203,7 @@ const Backups = () => {
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium" htmlFor="retentionDays">Retention Period (days)</label>
-                        <Input defaultValue={config.retentionDays.toString()} type="number" />
+                        <Input defaultValue={config.retentionDays.toString()} type="number" min={1} max={30} />
                       </div>
                     </div>
                   </div>

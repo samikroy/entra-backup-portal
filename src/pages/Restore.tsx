@@ -126,7 +126,7 @@ const Restore = () => {
         </CardHeader>
         <CardContent>
           <div className="grid gap-6">
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label className="text-sm font-medium">Select Tenant</label>
               <Select value={selectedTenantId} onValueChange={handleTenantChange}>
                 <SelectTrigger>
@@ -140,7 +140,7 @@ const Restore = () => {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
 
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Available Restore Points</h3>
