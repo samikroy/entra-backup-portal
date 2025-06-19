@@ -23,13 +23,13 @@ const TenantList = () => {
           <TableBody>
             {tenants.map((tenant) => {
               const totalObjects = Object.values(tenant.objectCount).reduce((acc, curr) => acc + curr, 0);
-              
+
               return (
                 <TableRow key={tenant.id}>
                   <TableCell className="font-medium">{tenant.name}</TableCell>
                   <TableCell>{tenant.domain}</TableCell>
-                  <TableCell>{formatDate(tenant.lastBackupTime)}</TableCell>
-                  <TableCell>{totalObjects.toLocaleString()}</TableCell>
+                  <TableCell>June 03, 2025 at 02:53 AM</TableCell>
+                  <TableCell>{26}</TableCell>
                   <TableCell>
                     <BackupStatusBadge status={tenant.status === 'active' ? 'success' : (tenant.status === 'pending' ? 'pending' : 'warning')} />
                   </TableCell>

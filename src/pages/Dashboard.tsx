@@ -23,7 +23,7 @@ const Dashboard = () => {
     backupStatus: "success",
   });
   const queries = {
-    lastBackupTime: "AzureADbackup_CL | where TimeGenerated >ago(30d) | summarize max(TimeGenerated)",
+    lastBackupTime: "AzureEntraBackup_CL | summarize LastBackupTime = max(TimeGenerated)",
     tenantsBackedUp: "AzureEntraBackup_CL | where TimeGenerated >ago(30d) | distinct TenantId | count",
     objectsBackedUp: "AzureEntraBackup_CL | distinct securityIdentifier_s | count",
     totalBackups: "AzureEntraBackup_CL | where TimeGenerated >ago(30d) | extend only_date = dayofyear(TimeGenerated) | distinct only_date | count",

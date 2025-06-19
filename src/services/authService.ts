@@ -1,7 +1,7 @@
 
 import { PublicClientApplication, AuthenticationResult, AccountInfo, SilentRequest } from '@azure/msal-browser';
 
-const localDevelopement: boolean = false;
+const localDevelopement: boolean = true;
 
 // For development without an actual Azure AD tenant
 export const isDevelopmentMode = false;
