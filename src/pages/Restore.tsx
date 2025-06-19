@@ -155,7 +155,7 @@ const Restore = () => {
                       <TableHead>Users</TableHead>
                       <TableHead>Groups</TableHead>
                       <TableHead>Apps</TableHead>
-                      <TableHead>Policies</TableHead>
+                      {/* <TableHead>Policies</TableHead> */}
                       <TableHead>Roles</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -182,7 +182,7 @@ const Restore = () => {
                         <TableCell>{point.objectsCaptured.users.toLocaleString()}</TableCell>
                         <TableCell>{point.objectsCaptured.groups.toLocaleString()}</TableCell>
                         <TableCell>{point.objectsCaptured.applications.toLocaleString()}</TableCell>
-                        <TableCell>{point.objectsCaptured.policies.toLocaleString()}</TableCell>
+                        {/* <TableCell>{point.objectsCaptured.policies.toLocaleString()}</TableCell> */}
                         <TableCell>{point.objectsCaptured.roles.toLocaleString()}</TableCell>
                       </TableRow>
                     ))}

@@ -55,7 +55,7 @@ interface RestorePoint {
     users: number;
     groups: number;
     applications: number;
-    policies: number;
+    policies?: number;
     roles: number;
   }
 }
@@ -82,8 +82,8 @@ interface BackupConfig {
 const tenants: Tenant[] = [
   {
     id: '1',
-    name: 'Contoso Ltd',
-    domain: 'contoso.onmicrosoft.com',
+    name: 'Samik',
+    domain: 'mctsamiktrng01.onmicrosoft.com',
     status: 'active',
     lastBackupTime: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
     objectCount: {
@@ -94,48 +94,48 @@ const tenants: Tenant[] = [
       policies: 35
     }
   },
-  {
-    id: '2',
-    name: 'Fabrikam Inc',
-    domain: 'fabrikam.onmicrosoft.com',
-    status: 'active',
-    lastBackupTime: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
-    objectCount: {
-      users: 750,
-      groups: 180,
-      applications: 32,
-      servicePrincipals: 45,
-      policies: 28
-    }
-  },
-  {
-    id: '3',
-    name: 'Northwind Traders',
-    domain: 'northwind.onmicrosoft.com',
-    status: 'pending',
-    lastBackupTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-    objectCount: {
-      users: 425,
-      groups: 95,
-      applications: 18,
-      servicePrincipals: 22,
-      policies: 15
-    }
-  },
-  {
-    id: '4',
-    name: 'Adventure Works',
-    domain: 'adventure-works.onmicrosoft.com',
-    status: 'inactive',
-    lastBackupTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 days ago
-    objectCount: {
-      users: 850,
-      groups: 210,
-      applications: 36,
-      servicePrincipals: 54,
-      policies: 29
-    }
-  }
+  // {
+  //   id: '2',
+  //   name: 'Fabrikam Inc',
+  //   domain: 'fabrikam.onmicrosoft.com',
+  //   status: 'active',
+  //   lastBackupTime: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
+  //   objectCount: {
+  //     users: 750,
+  //     groups: 180,
+  //     applications: 32,
+  //     servicePrincipals: 45,
+  //     policies: 28
+  //   }
+  // },
+  // {
+  //   id: '3',
+  //   name: 'Northwind Traders',
+  //   domain: 'northwind.onmicrosoft.com',
+  //   status: 'pending',
+  //   lastBackupTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
+  //   objectCount: {
+  //     users: 425,
+  //     groups: 95,
+  //     applications: 18,
+  //     servicePrincipals: 22,
+  //     policies: 15
+  //   }
+  // },
+  // {
+  //   id: '4',
+  //   name: 'Adventure Works',
+  //   domain: 'adventure-works.onmicrosoft.com',
+  //   status: 'inactive',
+  //   lastBackupTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 days ago
+  //   objectCount: {
+  //     users: 850,
+  //     groups: 210,
+  //     applications: 36,
+  //     servicePrincipals: 54,
+  //     policies: 29
+  //   }
+  // }
 ];
 
 // Mock backup history
@@ -206,52 +206,51 @@ const restorePoints: RestorePoint[] = [
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
     status: 'completed',
     objectsCaptured: {
-      users: 1250,
-      groups: 320,
-      applications: 48,
-      policies: 35,
-      roles: 15
+      users: 23,
+      groups: 2,
+      applications: 27,
+      roles: 7
     }
   },
-  {
-    id: '1002',
-    tenantId: '1',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-    status: 'completed',
-    objectsCaptured: {
-      users: 1248,
-      groups: 318,
-      applications: 48,
-      policies: 35,
-      roles: 15
-    }
-  },
-  {
-    id: '1003',
-    tenantId: '1',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-    status: 'completed',
-    objectsCaptured: {
-      users: 1240,
-      groups: 315,
-      applications: 47,
-      policies: 35,
-      roles: 15
-    }
-  },
-  {
-    id: '2001',
-    tenantId: '2',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
-    status: 'completed',
-    objectsCaptured: {
-      users: 750,
-      groups: 180,
-      applications: 32,
-      policies: 28,
-      roles: 12
-    }
-  }
+  // {
+  //   id: '1002',
+  //   tenantId: '1',
+  //   timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+  //   status: 'completed',
+  //   objectsCaptured: {
+  //     users: 1248,
+  //     groups: 318,
+  //     applications: 48,
+  //     policies: 35,
+  //     roles: 15
+  //   }
+  // },
+  // {
+  //   id: '1003',
+  //   tenantId: '1',
+  //   timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+  //   status: 'completed',
+  //   objectsCaptured: {
+  //     users: 1240,
+  //     groups: 315,
+  //     applications: 47,
+  //     policies: 35,
+  //     roles: 15
+  //   }
+  // },
+  // {
+  //   id: '2001',
+  //   tenantId: '2',
+  //   timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
+  //   status: 'completed',
+  //   objectsCaptured: {
+  //     users: 750,
+  //     groups: 180,
+  //     applications: 32,
+  //     policies: 28,
+  //     roles: 12
+  //   }
+  // }
 ];
 
 // Default backup config

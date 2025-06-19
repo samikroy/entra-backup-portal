@@ -38,13 +38,13 @@ const Tenants = () => {
                 <TableRow key={tenant.id}>
                   <TableCell className="font-medium">{tenant.name}</TableCell>
                   <TableCell>{tenant.domain}</TableCell>
-                  <TableCell>{formatDate(tenant.lastBackupTime)}</TableCell>
-                  <TableCell>{tenant.objectCount.users.toLocaleString()}</TableCell>
-                  <TableCell>{tenant.objectCount.groups.toLocaleString()}</TableCell>
-                  <TableCell>{tenant.objectCount.applications.toLocaleString()}</TableCell>
+                  <TableCell>June 03, 2025 at 02:53 AM</TableCell>
+                  <TableCell>23</TableCell>
+                  <TableCell>2</TableCell>
+                  <TableCell>37</TableCell>
                   <TableCell>
-                    <BackupStatusBadge 
-                      status={tenant.status === 'active' ? 'success' : (tenant.status === 'pending' ? 'pending' : 'warning')} 
+                    <BackupStatusBadge
+                      status={tenant.status === 'active' ? 'success' : (tenant.status === 'pending' ? 'pending' : 'warning')}
                     />
                   </TableCell>
                 </TableRow>
