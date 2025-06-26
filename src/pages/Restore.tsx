@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useMetrics } from "@/contexts/MetricsContext";
+
 
 const Restore = () => {
   const tenants = getTenants();
@@ -16,6 +18,8 @@ const Restore = () => {
   const [restoring, setRestoring] = useState(false);
   const restorePoints = getRestorePoints(selectedTenantId);
   const { toast } = useToast();
+  const { lastBackupTime, totalUsers, totalGroups, totalApplications, totalRoles, backupStatus } = useMetrics()
+
 
   const handleTenantChange = (value: string) => {
     setSelectedTenantId(value);
@@ -179,11 +183,11 @@ const Restore = () => {
                             {point.status}
                           </Badge>
                         </TableCell>
-                        <TableCell>{point.objectsCaptured.users.toLocaleString()}</TableCell>
-                        <TableCell>{point.objectsCaptured.groups.toLocaleString()}</TableCell>
-                        <TableCell>{point.objectsCaptured.applications.toLocaleString()}</TableCell>
+                        <TableCell>{totalUsers}</TableCell>
+                        <TableCell>{totalGroups}</TableCell>
+                        <TableCell>{totalApplications}</TableCell>
                         {/* <TableCell>{point.objectsCaptured.policies.toLocaleString()}</TableCell> */}
-                        <TableCell>{point.objectsCaptured.roles.toLocaleString()}</TableCell>
+                        <TableCell>{totalRoles}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

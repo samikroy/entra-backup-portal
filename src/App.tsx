@@ -16,6 +16,7 @@ import Restore from "./pages/Restore";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import TenantAdmin from "./pages/TenantAdmin";
+import { MetricsProvider } from "./contexts/MetricsContext";
 
 const queryClient = new QueryClient();
 
@@ -24,52 +25,53 @@ const App = () => (
     <AuthProvider>
       <ThemeProvider>
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/tenants"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Tenants />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Backups />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/restore"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Restore />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              {/* <Route
+          <MetricsProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Dashboard />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/tenants"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Tenants />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Backups />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/restore"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Restore />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                {/* <Route
                 path="/settings"
                 element={
                   <ProtectedRoute>
@@ -79,19 +81,20 @@ const App = () => (
                   </ProtectedRoute>
                 }
               /> */}
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <TenantAdmin />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <TenantAdmin />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </MetricsProvider>
         </TooltipProvider>
       </ThemeProvider>
     </AuthProvider>
