@@ -16,7 +16,7 @@ if (localDevelopement) {
 
 const msalConfig = {
   auth: {
-    clientId: '34d33d5b-e282-4269-9512-2dd2a3183796', // Replace with your Azure AD app registration client ID
+    clientId: '664cc9b7-5d59-4f66-848c-6f6213bd091e', // Replace with your Azure AD app registration client ID
     authority: 'https://login.microsoftonline.com/common', // Multi-tenant auth
     redirectUri: REDIRECTURI, // Replace with your redirect URI
   },

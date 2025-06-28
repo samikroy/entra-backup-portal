@@ -2,9 +2,12 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getTenants, formatDate } from "@/services/mockDataService";
 import BackupStatusBadge from "./BackupStatusBadge";
+import { useMetrics } from "@/contexts/MetricsContext";
 
 const TenantList = () => {
   const tenants = getTenants();
+  const { lastBackupTime, objectsBackedUp, backupStatus } = useMetrics()
+
 
   return (
     <div>
@@ -28,10 +31,10 @@ const TenantList = () => {
                 <TableRow key={tenant.id}>
                   <TableCell className="font-medium">{tenant.name}</TableCell>
                   <TableCell>{tenant.domain}</TableCell>
-                  <TableCell>June 03, 2025 at 02:53 AM</TableCell>
-                  <TableCell>{26}</TableCell>
+                  <TableCell>{lastBackupTime}</TableCell>
+                  <TableCell>{objectsBackedUp}</TableCell>
                   <TableCell>
-                    <BackupStatusBadge status={tenant.status === 'active' ? 'success' : (tenant.status === 'pending' ? 'pending' : 'warning')} />
+                    <BackupStatusBadge status={backupStatus} />
                   </TableCell>
                 </TableRow>
               );
