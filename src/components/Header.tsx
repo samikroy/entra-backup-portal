@@ -31,38 +31,41 @@ const Header = () => {
         <div className="md:hidden">
           <Logo />
         </div>
-        <div className="ml-auto flex items-center space-x-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                {theme === 'light' && <Sun className="h-[1.2rem] w-[1.2rem]" />}
-                {theme === 'dark' && <Moon className="h-[1.2rem] w-[1.2rem]" />}
-                {theme === 'azure' && <Circle className="h-[1.2rem] w-[1.2rem] text-azure-500" />}
-                {theme === 'corporate' && <Palette className="h-[1.2rem] w-[1.2rem]" />}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {themes.map((t) => (
-                <DropdownMenuItem
-                  key={t.value}
-                  onClick={() => setTheme(t.value as any)}
-                  className={theme === t.value ? "bg-accent text-accent-foreground" : ""}
-                >
-                  {t.icon}
-                  {t.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex w-full items-center justify-end md:justify-between space-x-4">
+          <div className='mx-auto p-2 hidden md:block bg-green-100 text-green-800'>Your Backup is 256-bit AES encrypted </div>
+          <div className='flex items-center space-x-4'>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  {theme === 'light' && <Sun className="h-[1.2rem] w-[1.2rem]" />}
+                  {theme === 'dark' && <Moon className="h-[1.2rem] w-[1.2rem]" />}
+                  {theme === 'azure' && <Circle className="h-[1.2rem] w-[1.2rem] text-azure-500" />}
+                  {theme === 'corporate' && <Palette className="h-[1.2rem] w-[1.2rem]" />}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {themes.map((t) => (
+                  <DropdownMenuItem
+                    key={t.value}
+                    onClick={() => setTheme(t.value as any)}
+                    className={theme === t.value ? "bg-accent text-accent-foreground" : ""}
+                  >
+                    {t.icon}
+                    {t.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          <div className="flex items-center gap-4">
-            {isDevelopmentMode && (
-              <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-md">Dev Mode</span>
-            )}
-            <span className="text-sm font-medium">{user?.name}</span>
-            <Button variant="outline" size="sm" onClick={logout}>
-              Logout
-            </Button>
+            <div className="flex items-center gap-4">
+              {isDevelopmentMode && (
+                <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-md">Dev Mode</span>
+              )}
+              <span className="text-sm font-medium">{user?.name}</span>
+              <Button variant="outline" size="sm" onClick={logout}>
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </div>
