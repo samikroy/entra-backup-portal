@@ -1,10 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { BackupStatus } from "@/components/dashboard/BackupStatusBadge";
 import { formatDate } from "@/services/mockDataService";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MetricsContext = createContext(null);
 
 export const MetricsProvider = ({ children }) => {
+  const { user } = useAuth();
+  console.log("MetricsProvider initialized with user:", user);
+
   const [metrics, setMetrics] = useState<{
     lastBackupTime: string;
     objectsBackedUp: number;
@@ -14,6 +18,7 @@ export const MetricsProvider = ({ children }) => {
     totalApplications: number;
     totalRoles?: number;
     backupStatus: BackupStatus;
+    consentGranted: boolean;
   }>({
     lastBackupTime: "",
     objectsBackedUp: 0,
@@ -23,6 +28,7 @@ export const MetricsProvider = ({ children }) => {
     totalApplications: 0,
     totalRoles: 0,
     backupStatus: "success",
+    consentGranted: true
   });
   const queries = {
     lastBackupTime: "AzureEntraBackup_CL | summarize LastBackupTime = max(TimeGenerated)",
@@ -113,8 +119,38 @@ export const MetricsProvider = ({ children }) => {
       console.log("Metrics fetched successfully");
     };
 
+    const checkConsentStatus = async () => {
+      // console.log("Checking admin consent status...", user);
+      try {
+        const response = await fetch(
+          "https://fn-entra-backup-srever-dev.azurewebsites.net/api/CheckUserAdminPermission",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ targetTenantId: user.tenantId }),
+          }
+        );
+
+        const data = await response.json();
+        setMetrics((prev) => ({
+          ...prev,
+          consentGranted: !data.consentGranted
+        })); // Show button if consent not granted
+      } catch (error) {
+        console.error("Failed to check admin consent status", error);
+        setMetrics((prev) => ({
+          ...prev,
+          consentGranted: true
+        })); // fallback to showing the button
+      }
+    };
+
+    checkConsentStatus();
+
     fetchAllMetrics();
-  }, []);
+  }, [queries.lastBackupTime, queries.objectsBackedUp, queries.tenantsBackedUp, queries.totalApplications, queries.totalBackups, queries.totalGroups, queries.totalRoles, queries.totalUsers, user?.tenantId]);
 
   return (
     <MetricsContext.Provider value={metrics}>

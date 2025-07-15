@@ -91,7 +91,8 @@ let loginInProgress = false;
 
 // Login request with desired scopes
 const loginRequest = {
-  scopes: ['User.Read', 'Directory.Read.All']
+  scopes: ['offline_access', 'email'],
+  prompt: "select_account"
 };
 
 // Function to handle login
@@ -130,7 +131,11 @@ export const getToken = async (): Promise<string | null> => {
     return mockAuthResult.accessToken;
   }
 
+  // Ensure MSAL is initialized before using any MSAL API
+  await initialize();
+
   const accounts = msalInstance.getAllAccounts();
+  console.log('Accounts found:', accounts);
   if (accounts.length === 0) {
     return null;
   }

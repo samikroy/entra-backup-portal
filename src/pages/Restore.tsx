@@ -9,9 +9,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useMetrics } from "@/contexts/MetricsContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 const Restore = () => {
+  const { user } = useAuth();
   const tenants = getTenants();
   const [selectedTenantId, setSelectedTenantId] = useState(tenants[0].id);
   const [selectedRestorePointId, setSelectedRestorePointId] = useState<string | null>(null);
@@ -19,7 +21,6 @@ const Restore = () => {
   const restorePoints = getRestorePoints(selectedTenantId);
   const { toast } = useToast();
   const { lastBackupTime, totalUsers, totalGroups, totalApplications, totalRoles, backupStatus } = useMetrics()
-
 
   const handleTenantChange = (value: string) => {
     setSelectedTenantId(value);
@@ -31,6 +32,8 @@ const Restore = () => {
   };
 
   const handleStartRestore = async () => {
+    // const graphToken = await msalGetToken();
+    console.log('User token:', user);
     if (!selectedRestorePointId) {
       toast({
         title: "No restore point selected",
@@ -45,6 +48,7 @@ const Restore = () => {
       {
         link: "https://fn-entra-backup-srever-dev.azurewebsites.net/api/GetUserLogs?",
         objectType: "users",
+        targetTenantId: user.tenantId,
         fetchBody: {
           workspaceId: "ad0ea146-ac18-46ac-bf5b-fd406e63e548",
           query: "AzureEntraBackup_CL | where isnotempty(userPrincipalName_s) | summarize arg_max(TimeGenerated, *) by id_g"
@@ -53,6 +57,7 @@ const Restore = () => {
       {
         link: "https://fn-entra-backup-srever-dev.azurewebsites.net/api/GetUserLogs?",
         objectType: "groups",
+        targetTenantId: user.tenantId,
         fetchBody: {
           workspaceId: "ad0ea146-ac18-46ac-bf5b-fd406e63e548",
           query: "AzureEntraBackup_CL | where isnotempty(groupTypes_s) | summarize arg_max(TimeGenerated, *) by id_g"
@@ -61,6 +66,7 @@ const Restore = () => {
       {
         link: "https://fn-entra-backup-srever-dev.azurewebsites.net/api/GetUserLogs?",
         objectType: "applications",
+        targetTenantId: user.tenantId,
         fetchBody: {
           workspaceId: "ad0ea146-ac18-46ac-bf5b-fd406e63e548",
           query: "AzureEntraBackup_CL | where isnotempty(appId_g) and isempty(servicePrincipalType_s) | summarize arg_max(TimeGenerated, *) by id_g"
