@@ -28,6 +28,9 @@ const Backups = () => {
         identity: false,
         roles: false,
       },
+      notifyOnFailure: true,
+      notifyOnSuccess: false,
+      notificationEmail: 'admin@example.com'
     }
   )
 
@@ -46,6 +49,7 @@ const Backups = () => {
       console.log("Saving configuration:", {
         newDateTime,
         newTypes,
+        currentConfig
       });
       const response = await fetch('https://fn-entra-backup-srever-dev.azurewebsites.net/api/ManageSchedule?', {
         method: 'POST',
@@ -55,6 +59,9 @@ const Backups = () => {
         body: JSON.stringify({
           NewDateTime: newDateTime,
           newTypes: newTypes,
+          notifyOnFailure: currentConfig.notifyOnFailure,
+          notifyOnSuccess: currentConfig.notifyOnSuccess,
+          notificationEmail: currentConfig.notificationEmail,
         }),
       });
       if (!response.ok) {
@@ -319,16 +326,33 @@ const Backups = () => {
                   <h3 className="text-lg font-medium mb-4">Notifications</h3>
                   <div className="grid gap-4">
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="notifyFailure" checked={config.notifyOnFailure} />
+                      <Checkbox id="notifyFailure"
+                        checked={currentConfig.notifyOnFailure}
+                        onCheckedChange={() => setCurrentConfig((prev) => ({
+                          ...prev,
+                          notifyOnFailure: !currentConfig.notifyOnFailure,
+                        }))}
+                      />
                       <label className="text-sm font-medium" htmlFor="notifyFailure">Notify on failure</label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="notifySuccess" checked={config.notifyOnSuccess} />
+                      <Checkbox id="notifySuccess"
+                        checked={currentConfig.notifyOnSuccess}
+                        onCheckedChange={() => setCurrentConfig((prev) => ({
+                          ...prev,
+                          notifyOnSuccess: !currentConfig.notifyOnSuccess
+                        }))} />
                       <label className="text-sm font-medium" htmlFor="notifySuccess">Notify on success</label>
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium" htmlFor="notificationEmail">Email address</label>
-                      <Input defaultValue={config.notificationEmail} type="email" />
+                      <Input defaultValue={currentConfig.notificationEmail}
+                        onChange={(e) =>
+                          setCurrentConfig((prev) => ({
+                            ...prev,
+                            notificationEmail: e.target.value,
+                          }))
+                        } type="email" />
                     </div>
                   </div>
                 </div>
