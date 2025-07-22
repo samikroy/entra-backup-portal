@@ -126,14 +126,18 @@ const Backups = () => {
           throw new Error('Failed to fetch backup configuration');
         }
         // console.log(response.result)
-        const data = await response.text();
-        const enabledTypes = data
+        const data = await response.json();
+        console.log("Fetched object types:", data);
+        const enabledTypes = data.result
           .split(',')
           .map(s => s.trim().toLowerCase());
         console.log(enabledTypes.includes('serviceprincipals'))
         // update currentconfig using setcurrentconfig - turn object types true if present in enabledTypes
         setCurrentConfig((prev) => ({
           ...prev,
+          notificationEmail: data.notificationEmail,
+          notifyOnFailure: data.notifyOnFailure,
+          notifyOnSuccess: data.notifyOnSuccess,
           objectTypes: {
             users: enabledTypes.includes('users'),
             groups: enabledTypes.includes('groups'),
@@ -346,7 +350,7 @@ const Backups = () => {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium" htmlFor="notificationEmail">Email address</label>
-                      <Input defaultValue={currentConfig.notificationEmail}
+                      <Input value={currentConfig.notificationEmail}
                         onChange={(e) =>
                           setCurrentConfig((prev) => ({
                             ...prev,
