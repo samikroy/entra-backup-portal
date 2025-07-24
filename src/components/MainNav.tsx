@@ -16,9 +16,10 @@ const MainNav: React.FC<MainNavProps> = ({ className }) => {
   const navItems = [
     { name: "Dashboard", href: "/" },
     { name: "Tenants", href: "/tenants" },
+    { name: "Objects", href: "/objects?tenant=1&type=users" },
+    { name: "Graph", href: "/graph" },
     { name: "Settings", href: "/settings" },
     { name: "Restore", href: "/restore" },
-    // { name: "Settings", href: "/settings" },
   ];
 
   // Add admin link for admins only

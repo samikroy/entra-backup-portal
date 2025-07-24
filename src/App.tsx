@@ -16,6 +16,10 @@ import Restore from "./pages/Restore";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import TenantAdmin from "./pages/TenantAdmin";
+import ObjectsList from "./pages/ObjectsList";
+import ObjectDetails from "./pages/ObjectDetails";
+import BackupDifferences from "./pages/BackupDifferences";
+import ObjectGraph from "./pages/ObjectGraph";
 import { MetricsProvider } from "./contexts/MetricsContext";
 
 const queryClient = new QueryClient();
@@ -81,6 +85,46 @@ const App = () => (
                   </ProtectedRoute>
                 }
               /> */}
+                <Route
+                  path="/objects"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ObjectsList />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/objects/:id"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ObjectDetails />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/backup-diff"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <BackupDifferences />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/graph"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ObjectGraph />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/admin"
                   element={
