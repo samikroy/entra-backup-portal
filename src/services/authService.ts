@@ -4,7 +4,7 @@ import { PublicClientApplication, AuthenticationResult, AccountInfo, SilentReque
 const localDevelopement: boolean = false;
 
 // For development without an actual Azure AD tenant
-export const isDevelopmentMode = false;
+export const isDevelopmentMode = true;
 
 let REDIRECTURI = ""
 

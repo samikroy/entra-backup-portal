@@ -14,11 +14,11 @@ const Login = () => {
   const navigate = useNavigate();
   const [loginType, setLoginType] = useState<'admin' | 'user'>('admin');
 
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     navigate('/', { replace: true });
-  //   }
-  // }, [isAuthenticated, navigate]);
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLogin = async () => {
     try {
