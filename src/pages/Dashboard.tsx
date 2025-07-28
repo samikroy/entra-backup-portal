@@ -1,5 +1,4 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import MetricCard from "@/components/dashboard/MetricCard";
 import TenantList from "@/components/dashboard/TenantList";
 import { formatDate } from "@/services/mockDataService";
@@ -7,7 +6,7 @@ import BackupStatusBadge from "@/components/dashboard/BackupStatusBadge";
 import type { BackupStatus } from "@/components/dashboard/BackupStatusBadge";
 import { useEffect, useState } from "react";
 import { useMetrics } from "@/contexts/MetricsContext";
-import { AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts";
+import { AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { Activity, Users, Shield, Database, TrendingUp, Server, Zap, Eye } from "lucide-react";
 
 const Dashboard = () => {
@@ -150,7 +149,14 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
                 <YAxis stroke="hsl(var(--muted-foreground))" />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '0.5rem',
+                    color: 'hsl(var(--foreground))'
+                  }}
+                />
                 <Area type="monotone" dataKey="backups" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#backupGradient)" />
                 <Area type="monotone" dataKey="users" stroke="hsl(var(--accent))" fillOpacity={1} fill="url(#userGradient)" />
               </AreaChart>
@@ -180,7 +186,14 @@ const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '0.5rem',
+                    color: 'hsl(var(--foreground))'
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex justify-center gap-4 mt-4">
