@@ -8,7 +8,9 @@ import {
   Save,
   History,
   Settings as SettingsIcon,
-  Users
+  Users,
+  Database,
+  GitBranch
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -19,9 +21,10 @@ const Sidebar = () => {
   const navItems = [
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard className="h-5 w-5" /> },
     { name: 'Tenants', path: '/tenants', icon: <Server className="h-5 w-5" /> },
-    { name: 'Settings', path: '/settings', icon: <Save className="h-5 w-5" /> },
+    { name: 'Objects', path: '/objects?tenant=1&type=users', icon: <Database className="h-5 w-5" /> },
+    { name: 'Graph', path: '/graph', icon: <GitBranch className="h-5 w-5" /> },
+    { name: 'Settings', path: '/settings', icon: <SettingsIcon className="h-5 w-5" /> },
     { name: 'Restore', path: '/restore', icon: <History className="h-5 w-5" /> },
-    // { name: 'Settings', path: '/settings', icon: <SettingsIcon className="h-5 w-5" /> },
   ];
 
   if (isAdmin) {
