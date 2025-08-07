@@ -1,5 +1,4 @@
-import { useCallback, useState } from 'react';
-import { ReactFlow, MiniMap, Controls, Background, useNodesState, useEdgesState, Node, Edge, Position } from '@xyflow/react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,16 +6,59 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Building, Smartphone, Shield, Settings, Maximize2, Minimize2, Filter } from "lucide-react";
 import { getGraphData } from "@/services/mockDataService";
-import '@xyflow/react/dist/style.css';
+
+interface GraphNode {
+  id: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  type: string;
+  label: string;
+  isActive?: boolean;
+  radius: number;
+}
+
+interface GraphEdge {
+  source: string;
+  target: string;
+  type: string;
+}
 
 const ObjectGraph = () => {
   const [selectedTenant, setSelectedTenant] = useState("1");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>();
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [draggedNode, setDraggedNode] = useState<string | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   
   const graphData = getGraphData(selectedTenant);
-  const [nodes, setNodes, onNodesChange] = useNodesState(graphData.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(graphData.edges);
+  
+  // Convert graph data to force-directed format
+  const [nodes, setNodes] = useState<GraphNode[]>(() => {
+    return graphData.nodes.map((node, index) => ({
+      id: node.id,
+      x: Math.random() * 800,
+      y: Math.random() * 600,
+      vx: 0,
+      vy: 0,
+      type: node.data.type,
+      label: node.data.label,
+      isActive: node.data.isActive,
+      radius: getNodeRadius(node.data.type)
+    }));
+  });
+  
+  const [edges] = useState<GraphEdge[]>(() => {
+    return graphData.edges.map(edge => ({
+      source: edge.source,
+      target: edge.target,
+      type: edge.type || 'default'
+    }));
+  });
 
   const getNodeIcon = (type: string) => {
     switch (type) {
@@ -40,70 +82,333 @@ const ObjectGraph = () => {
     }
   };
 
-  const nodeTypes = {
-    custom: ({ data }: { data: any }) => (
-      <div 
-        className="glassmorphism rounded-2xl border-2 min-w-[140px] hover:shadow-2xl transition-all duration-300 hover:scale-110 cursor-pointer animate-fade-in"
-        style={{ 
-          borderColor: getNodeColor(data.type),
-          background: `linear-gradient(135deg, ${getNodeColor(data.type)}15, ${getNodeColor(data.type)}05)`,
-          boxShadow: `0 8px 32px ${getNodeColor(data.type)}20`
-        }}
-      >
-        <div className="p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <div 
-              className="p-2 rounded-xl text-2xl"
-              style={{ 
-                background: `${getNodeColor(data.type)}20`,
-                color: getNodeColor(data.type)
-              }}
-            >
-              {getNodeIcon(data.type)}
-            </div>
-            <div className="flex-1">
-              <div className="font-bold text-sm text-foreground">{data.label}</div>
-              <div className="text-xs opacity-70" style={{ color: getNodeColor(data.type) }}>
-                {data.type.toUpperCase()}
-              </div>
-            </div>
-          </div>
-          {data.isActive !== undefined && (
-            <Badge 
-              variant={data.isActive ? "default" : "secondary"} 
-              className={`text-xs ${data.isActive 
-                ? 'bg-green-500/20 text-green-300 border-green-500/30' 
-                : 'bg-gray-500/20 text-gray-300 border-gray-500/30'
-              } glassmorphism`}
-            >
-              {data.isActive ? "🟢 Active" : "⚫ Inactive"}
-            </Badge>
-          )}
-          <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full animate-pulse" 
-               style={{ background: getNodeColor(data.type) }}></div>
-        </div>
-      </div>
-    ),
+  const getNodeRadius = (type: string) => {
+    switch (type) {
+      case 'user': return 25;
+      case 'group': return 35;
+      case 'application': return 30;
+      case 'policy': return 20;
+      case 'servicePrincipal': return 28;
+      default: return 25;
+    }
   };
 
-  const filteredNodes = nodes.filter(node => {
-    if (selectedFilter === 'all') return true;
-    return node.data.type === selectedFilter;
-  });
+  // Force-directed physics simulation
+  const applyForces = (nodes: GraphNode[], edges: GraphEdge[]) => {
+    const width = canvasRef.current?.width || 800;
+    const height = canvasRef.current?.height || 600;
+    
+    // Reset forces
+    nodes.forEach(node => {
+      node.vx *= 0.8; // Damping
+      node.vy *= 0.8;
+    });
 
-  const filteredEdges = edges.filter(edge => {
-    const sourceVisible = filteredNodes.some(node => node.id === edge.source);
-    const targetVisible = filteredNodes.some(node => node.id === edge.target);
-    return sourceVisible && targetVisible;
-  });
+    // Repulsion between nodes
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[j].x - nodes[i].x;
+        const dy = nodes[j].y - nodes[i].y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance > 0) {
+          const force = 800 / (distance * distance);
+          const fx = (dx / distance) * force;
+          const fy = (dy / distance) * force;
+          
+          nodes[i].vx -= fx;
+          nodes[i].vy -= fy;
+          nodes[j].vx += fx;
+          nodes[j].vy += fy;
+        }
+      }
+    }
 
-  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
-    console.log('Node clicked:', node);
-    // Could navigate to object details page
+    // Attraction along edges
+    edges.forEach(edge => {
+      const source = nodes.find(n => n.id === edge.source);
+      const target = nodes.find(n => n.id === edge.target);
+      
+      if (source && target) {
+        const dx = target.x - source.x;
+        const dy = target.y - source.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance > 0) {
+          const force = distance * 0.001;
+          const fx = (dx / distance) * force;
+          const fy = (dy / distance) * force;
+          
+          source.vx += fx;
+          source.vy += fy;
+          target.vx -= fx;
+          target.vy -= fy;
+        }
+      }
+    });
+
+    // Center attraction
+    const centerX = width / 2;
+    const centerY = height / 2;
+    nodes.forEach(node => {
+      const dx = centerX - node.x;
+      const dy = centerY - node.y;
+      node.vx += dx * 0.0001;
+      node.vy += dy * 0.0001;
+    });
+
+    // Update positions
+    nodes.forEach(node => {
+      if (draggedNode !== node.id) {
+        node.x += node.vx;
+        node.y += node.vy;
+        
+        // Boundary constraints
+        node.x = Math.max(node.radius, Math.min(width - node.radius, node.x));
+        node.y = Math.max(node.radius, Math.min(height - node.radius, node.y));
+      }
+    });
+  };
+
+  // Render the graph
+  const render = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Apply dark cyberpunk background
+    const gradient = ctx.createRadialGradient(
+      canvas.width / 2, canvas.height / 2, 0,
+      canvas.width / 2, canvas.height / 2, canvas.width / 2
+    );
+    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.1)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.9)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw grid pattern
+    ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < canvas.width; x += 50) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += 50) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+
+    const filteredNodes = nodes.filter(node => {
+      if (selectedFilter === 'all') return true;
+      return node.type === selectedFilter;
+    });
+
+    const filteredEdges = edges.filter(edge => {
+      const sourceVisible = filteredNodes.some(node => node.id === edge.source);
+      const targetVisible = filteredNodes.some(node => node.id === edge.target);
+      return sourceVisible && targetVisible;
+    });
+
+    // Draw edges with glow effect
+    filteredEdges.forEach(edge => {
+      const source = filteredNodes.find(n => n.id === edge.source);
+      const target = filteredNodes.find(n => n.id === edge.target);
+      
+      if (source && target) {
+        // Glow effect
+        ctx.shadowColor = getNodeColor(source.type);
+        ctx.shadowBlur = 10;
+        ctx.strokeStyle = getNodeColor(source.type);
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 0.6;
+        
+        ctx.beginPath();
+        ctx.moveTo(source.x, source.y);
+        ctx.lineTo(target.x, target.y);
+        ctx.stroke();
+        
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+      }
+    });
+
+    // Draw nodes with enhanced cyberpunk styling
+    filteredNodes.forEach(node => {
+      const isHovered = hoveredNode === node.id;
+      const scale = isHovered ? 1.2 : 1;
+      const radius = node.radius * scale;
+      
+      // Outer glow
+      const glowGradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, radius * 2);
+      glowGradient.addColorStop(0, getNodeColor(node.type) + '40');
+      glowGradient.addColorStop(1, 'transparent');
+      ctx.fillStyle = glowGradient;
+      ctx.fillRect(node.x - radius * 2, node.y - radius * 2, radius * 4, radius * 4);
+      
+      // Main node body
+      const nodeGradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, radius);
+      nodeGradient.addColorStop(0, getNodeColor(node.type) + '80');
+      nodeGradient.addColorStop(0.7, getNodeColor(node.type) + '40');
+      nodeGradient.addColorStop(1, getNodeColor(node.type) + '20');
+      
+      ctx.fillStyle = nodeGradient;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Border
+      ctx.strokeStyle = getNodeColor(node.type);
+      ctx.lineWidth = isHovered ? 3 : 2;
+      ctx.stroke();
+      
+      // Pulsing ring for active nodes
+      if (node.isActive) {
+        const pulseRadius = radius + 5 + Math.sin(Date.now() * 0.005) * 3;
+        ctx.strokeStyle = getNodeColor(node.type) + '60';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, pulseRadius, 0, 2 * Math.PI);
+        ctx.stroke();
+      }
+      
+      // Icon
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `${radius * 0.8}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(getNodeIcon(node.type), node.x, node.y);
+      
+      // Label on hover
+      if (isHovered) {
+        const labelY = node.y + radius + 20;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(node.x - 40, labelY - 10, 80, 20);
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '12px Arial';
+        ctx.fillText(node.label, node.x, labelY);
+        
+        ctx.fillStyle = getNodeColor(node.type);
+        ctx.font = '10px Arial';
+        ctx.fillText(node.type.toUpperCase(), node.x, labelY + 15);
+      }
+    });
+  };
+
+  // Animation loop
+  const animate = () => {
+    applyForces(nodes, edges);
+    render();
+    animationRef.current = requestAnimationFrame(animate);
+  };
+
+  // Mouse interaction handlers
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setMousePos({ x, y });
+
+    // Check for node hover
+    const filteredNodes = nodes.filter(node => {
+      if (selectedFilter === 'all') return true;
+      return node.type === selectedFilter;
+    });
+
+    const hoveredNode = filteredNodes.find(node => {
+      const dx = x - node.x;
+      const dy = y - node.y;
+      return Math.sqrt(dx * dx + dy * dy) < node.radius;
+    });
+
+    setHoveredNode(hoveredNode?.id || null);
+    canvas.style.cursor = hoveredNode ? 'pointer' : 'default';
+
+    // Handle dragging
+    if (draggedNode) {
+      const node = nodes.find(n => n.id === draggedNode);
+      if (node) {
+        node.x = x;
+        node.y = y;
+        node.vx = 0;
+        node.vy = 0;
+      }
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const filteredNodes = nodes.filter(node => {
+      if (selectedFilter === 'all') return true;
+      return node.type === selectedFilter;
+    });
+
+    const clickedNode = filteredNodes.find(node => {
+      const dx = x - node.x;
+      const dy = y - node.y;
+      return Math.sqrt(dx * dx + dy * dy) < node.radius;
+    });
+
+    if (clickedNode) {
+      setDraggedNode(clickedNode.id);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setDraggedNode(null);
+  };
+
+  // Initialize canvas and start animation
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const updateCanvasSize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+
+    updateCanvasSize();
+    window.addEventListener('resize', updateCanvasSize);
+    
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      window.removeEventListener('resize', updateCanvasSize);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
   }, []);
 
+  // Update animation when filter changes
+  useEffect(() => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    animationRef.current = requestAnimationFrame(animate);
+  }, [selectedFilter]);
+
   const nodeStats = nodes.reduce((acc, node) => {
-    const type = node.data?.type || 'unknown';
+    const type = node.type || 'unknown';
     acc[type] = (acc[type] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -244,44 +549,17 @@ const ObjectGraph = () => {
                 ? 'radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, rgba(0, 0, 0, 0.8) 70%)'
                 : 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%)'
             }}>
-              <ReactFlow
-                nodes={filteredNodes.map(node => ({ ...node, type: 'custom' }))}
-                edges={filteredEdges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onNodeClick={onNodeClick}
-                nodeTypes={nodeTypes}
-                fitView
-                attributionPosition="bottom-left"
-                className="rounded-b-3xl"
-                style={{
-                  background: 'transparent'
+              <canvas
+                ref={canvasRef}
+                className="w-full h-full rounded-b-3xl cursor-pointer"
+                onMouseMove={handleMouseMove}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={() => {
+                  setHoveredNode(null);
+                  setDraggedNode(null);
                 }}
-              >
-                <Background 
-                  gap={20} 
-                  size={2} 
-                  color={isFullscreen ? "rgba(59, 130, 246, 0.3)" : "rgba(59, 130, 246, 0.2)"}
-                />
-                <Controls 
-                  className="glassmorphism border border-primary/30 rounded-xl" 
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)'
-                  }}
-                />
-                <MiniMap 
-                  nodeColor={(node) => getNodeColor((node.data as any)?.type || 'default')}
-                  nodeStrokeWidth={3}
-                  zoomable
-                  pannable
-                  className="glassmorphism border border-primary/30 rounded-xl"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)'
-                  }}
-                />
-              </ReactFlow>
+              />
             </div>
           </CardContent>
         </Card>
@@ -346,26 +624,28 @@ const ObjectGraph = () => {
         </TabsContent>
         
         <TabsContent value="stats">
-          <Card>
-            <CardHeader>
-              <CardTitle>Graph Statistics</CardTitle>
+          <Card className="glassmorphism border border-primary/20 rounded-3xl shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 border-b border-primary/20 rounded-t-3xl">
+              <CardTitle className="text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Force-Directed Graph Analytics
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Total Nodes:</span>
-                    <span className="font-medium">{filteredNodes.length}</span>
+                    <span className="font-medium text-primary">{nodes.length}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Total Edges:</span>
-                    <span className="font-medium">{filteredEdges.length}</span>
+                    <span className="font-medium text-primary">{edges.length}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Density:</span>
-                    <span className="font-medium">
-                      {filteredNodes.length > 1 
-                        ? ((filteredEdges.length / (filteredNodes.length * (filteredNodes.length - 1))) * 100).toFixed(1)
+                    <span>Graph Density:</span>
+                    <span className="font-medium text-primary">
+                       {nodes.length > 1
+                        ? Math.round((edges.length / (nodes.length * (nodes.length - 1) / 2)) * 100)
                         : 0}%
                     </span>
                   </div>
@@ -373,14 +653,14 @@ const ObjectGraph = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Active Objects:</span>
-                    <span className="font-medium">
-                      {filteredNodes.filter(n => n.data.isActive).length}
+                    <span className="font-medium text-green-400">
+                      {nodes.filter(n => n.isActive).length}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Inactive Objects:</span>
-                    <span className="font-medium">
-                      {filteredNodes.filter(n => !n.data.isActive).length}
+                    <span className="font-medium text-red-400">
+                      {nodes.filter(n => !n.isActive).length}
                     </span>
                   </div>
                 </div>
@@ -390,18 +670,70 @@ const ObjectGraph = () => {
         </TabsContent>
         
         <TabsContent value="controls">
-          <Card>
-            <CardHeader>
-              <CardTitle>Graph Controls</CardTitle>
+          <Card className="glassmorphism border border-primary/20 rounded-3xl shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 border-b border-primary/20 rounded-t-3xl">
+              <CardTitle className="text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Force-Directed Interaction Guide
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 text-sm">
-                <div><strong>Pan:</strong> Click and drag on empty space</div>
-                <div><strong>Zoom:</strong> Mouse wheel or pinch gesture</div>
-                <div><strong>Select Node:</strong> Click on any node</div>
-                <div><strong>Fit View:</strong> Use the fit view button in controls</div>
-                <div><strong>Reset:</strong> Double-click on empty space</div>
-                <div><strong>Minimap:</strong> Click and drag in the minimap to navigate</div>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-medium mb-3 text-lg flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                    Real-Time Physics Navigation
+                  </h4>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
+                      <span>Drag any node to manipulate the force field</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-1 bg-green-400 rounded-full"></div>
+                      <span>Hover over nodes for enhanced details and glow effects</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-1 bg-yellow-400 rounded-full"></div>
+                      <span>Active objects pulse with energy rings</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-1 bg-purple-400 rounded-full"></div>
+                      <span>Filter by object type for focused analysis</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-3 text-lg flex items-center gap-2">
+                    <div className="w-2 h-2 bg-accent rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                    Advanced Force Simulation
+                  </h4>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-1 bg-red-400 rounded-full"></div>
+                      <span>Electrostatic repulsion prevents node clustering</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
+                      <span>Spring forces along relationships maintain structure</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-1 bg-green-400 rounded-full"></div>
+                      <span>Gravitational center force creates stability</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-1 bg-purple-400 rounded-full"></div>
+                      <span>Velocity damping creates smooth, organic movement</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-4 border border-primary/20">
+                  <h5 className="font-medium mb-2 text-primary">Neural Network Visualization</h5>
+                  <p className="text-sm text-muted-foreground">
+                    This force-directed graph simulates Entra ID object relationships as a living, breathing neural network. 
+                    Each node represents an identity object with realistic physics interactions, creating an intuitive 
+                    visualization of your organization's digital ecosystem.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
