@@ -54,33 +54,40 @@ const BackupDifferences = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link to={`/objects/${objectId}?tenant=${tenantId}`}>
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Object
-          </Button>
-        </Link>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90 animate-fade-in">
+      <div className="container mx-auto p-6 space-y-8">
+        {/* Navigation */}
+        <div className="glassmorphism rounded-2xl p-4 border border-primary/20">
+          <Link to={`/objects/${objectId}?tenant=${tenantId}`}>
+            <Button variant="outline" size="sm" className="glassmorphism border-primary/30 hover:bg-primary/10">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Object
+            </Button>
+          </Link>
+        </div>
 
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Backup Differences</h2>
-        <p className="text-muted-foreground">
-          Compare changes between different backup versions.
-        </p>
-      </div>
+        {/* Hero Section */}
+        <div className="glassmorphism rounded-3xl p-8 border border-primary/20 shadow-2xl">
+          <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+            Backup Differences
+          </h2>
+          <p className="text-muted-foreground text-lg mt-2">
+            Compare changes between different backup versions with AI-powered analysis.
+          </p>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GitCompare className="h-5 w-5" />
-            Compare Backups
-          </CardTitle>
-          <CardDescription>
-            Select two backup versions to see what changed between them.
-          </CardDescription>
-        </CardHeader>
+        <Card className="glassmorphism border border-primary/20 rounded-3xl shadow-2xl">
+          <CardHeader className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border-b border-primary/20 rounded-t-3xl">
+            <CardTitle className="flex items-center gap-3 text-2xl">
+              <div className="p-2 rounded-xl bg-primary/20 text-primary">
+                <GitCompare className="h-6 w-6" />
+              </div>
+              Compare Backups
+            </CardTitle>
+            <CardDescription className="text-lg">
+              Select two backup versions to see what changed between them.
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
@@ -126,41 +133,50 @@ const BackupDifferences = () => {
 
       {differences && fromBackup && toBackup && (
         <Tabs defaultValue="summary" className="w-full">
-          <TabsList>
-            <TabsTrigger value="summary">Summary</TabsTrigger>
-            <TabsTrigger value="details">Detailed Changes</TabsTrigger>
-            <TabsTrigger value="raw">Raw Data</TabsTrigger>
+          <TabsList className="glassmorphism border border-primary/10 rounded-2xl p-2">
+            <TabsTrigger value="summary" className="data-[state=active]:bg-primary/20">Summary</TabsTrigger>
+            <TabsTrigger value="details" className="data-[state=active]:bg-primary/20">Detailed Changes</TabsTrigger>
+            <TabsTrigger value="raw" className="data-[state=active]:bg-primary/20">Raw Data</TabsTrigger>
           </TabsList>
           
           <TabsContent value="summary" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-3">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg text-green-600">Added</CardTitle>
+            <div className="grid gap-6 md:grid-cols-3">
+              <Card className="glassmorphism border border-green-500/30 rounded-2xl shadow-xl bg-gradient-to-br from-green-500/10 to-green-600/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl text-green-600 flex items-center gap-2">
+                    <Plus className="h-5 w-5" />
+                    Added
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{differences.summary.added}</div>
-                  <p className="text-xs text-muted-foreground">new attributes</p>
+                  <div className="text-3xl font-bold text-green-700">{differences.summary.added}</div>
+                  <p className="text-sm text-muted-foreground mt-1">new attributes</p>
                 </CardContent>
               </Card>
               
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg text-blue-600">Modified</CardTitle>
+              <Card className="glassmorphism border border-blue-500/30 rounded-2xl shadow-xl bg-gradient-to-br from-blue-500/10 to-blue-600/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl text-blue-600 flex items-center gap-2">
+                    <RotateCcw className="h-5 w-5" />
+                    Modified
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{differences.summary.modified}</div>
-                  <p className="text-xs text-muted-foreground">changed attributes</p>
+                  <div className="text-3xl font-bold text-blue-700">{differences.summary.modified}</div>
+                  <p className="text-sm text-muted-foreground mt-1">changed attributes</p>
                 </CardContent>
               </Card>
               
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg text-red-600">Removed</CardTitle>
+              <Card className="glassmorphism border border-red-500/30 rounded-2xl shadow-xl bg-gradient-to-br from-red-500/10 to-red-600/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl text-red-600 flex items-center gap-2">
+                    <Minus className="h-5 w-5" />
+                    Removed
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{differences.summary.removed}</div>
-                  <p className="text-xs text-muted-foreground">deleted attributes</p>
+                  <div className="text-3xl font-bold text-red-700">{differences.summary.removed}</div>
+                  <p className="text-sm text-muted-foreground mt-1">deleted attributes</p>
                 </CardContent>
               </Card>
             </div>
@@ -233,6 +249,7 @@ const BackupDifferences = () => {
           </TabsContent>
         </Tabs>
       )}
+      </div>
     </div>
   );
 };
