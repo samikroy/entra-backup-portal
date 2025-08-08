@@ -26,6 +26,40 @@ interface GraphEdge {
 }
 
 const ObjectGraph = () => {
+  // Helper functions defined first
+  const getNodeIcon = (type: string) => {
+    switch (type) {
+      case 'user': return '👤';
+      case 'group': return '👥';
+      case 'application': return '📱';
+      case 'policy': return '🛡️';
+      case 'servicePrincipal': return '⚙️';
+      default: return '📄';
+    }
+  };
+
+  const getNodeColor = (type: string) => {
+    switch (type) {
+      case 'user': return '#3b82f6';
+      case 'group': return '#10b981';
+      case 'application': return '#f59e0b';
+      case 'policy': return '#ef4444';
+      case 'servicePrincipal': return '#8b5cf6';
+      default: return '#6b7280';
+    }
+  };
+
+  const getNodeRadius = (type: string) => {
+    switch (type) {
+      case 'user': return 25;
+      case 'group': return 35;
+      case 'application': return 30;
+      case 'policy': return 20;
+      case 'servicePrincipal': return 28;
+      default: return 25;
+    }
+  };
+
   const [selectedTenant, setSelectedTenant] = useState("1");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -63,39 +97,6 @@ const ObjectGraph = () => {
       type: edge.type || 'default'
     }));
   });
-
-  const getNodeIcon = (type: string) => {
-    switch (type) {
-      case 'user': return '👤';
-      case 'group': return '👥';
-      case 'application': return '📱';
-      case 'policy': return '🛡️';
-      case 'servicePrincipal': return '⚙️';
-      default: return '📄';
-    }
-  };
-
-  const getNodeColor = (type: string) => {
-    switch (type) {
-      case 'user': return '#3b82f6';
-      case 'group': return '#10b981';
-      case 'application': return '#f59e0b';
-      case 'policy': return '#ef4444';
-      case 'servicePrincipal': return '#8b5cf6';
-      default: return '#6b7280';
-    }
-  };
-
-  const getNodeRadius = (type: string) => {
-    switch (type) {
-      case 'user': return 25;
-      case 'group': return 35;
-      case 'application': return 30;
-      case 'policy': return 20;
-      case 'servicePrincipal': return 28;
-      default: return 25;
-    }
-  };
 
   // Force-directed physics simulation
   const applyForces = (nodes: GraphNode[], edges: GraphEdge[]) => {
