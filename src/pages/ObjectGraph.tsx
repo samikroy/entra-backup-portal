@@ -39,17 +39,21 @@ const ObjectGraph = () => {
   
   // Convert graph data to force-directed format
   const [nodes, setNodes] = useState<GraphNode[]>(() => {
-    return graphData.nodes.map((node, index) => ({
-      id: node.id,
-      x: Math.random() * 800,
-      y: Math.random() * 600,
-      vx: 0,
-      vy: 0,
-      type: node.data.type,
-      label: node.data.label,
-      isActive: node.data.isActive,
-      radius: getNodeRadius(node.data.type)
-    }));
+    return graphData.nodes.map((node, index) => {
+      const nodeX = Math.random() * 800;
+      const nodeY = Math.random() * 600;
+      return {
+        id: node.id,
+        x: nodeX,
+        y: nodeY,
+        vx: 0,
+        vy: 0,
+        type: node.data.type,
+        label: node.data.label,
+        isActive: node.data.isActive,
+        radius: getNodeRadius(node.data.type)
+      };
+    });
   });
   
   const [edges] = useState<GraphEdge[]>(() => {
